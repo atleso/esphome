@@ -20,7 +20,7 @@ namespace m5stack420ma {
 
 class M5Stack420MASensor : public sensor::Sensor, public PollingComponent, public i2c::I2CDevice {
   public:
-    M5Stack420MASensor() = default;
+    M5Stack420MASensor() = i2c::I2CDevice(0x55) {};
     
     Sensor *current_sensor{new Sensor()};
     
