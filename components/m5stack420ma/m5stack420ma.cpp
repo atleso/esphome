@@ -45,8 +45,6 @@ void M5Stack420MASensor::dump_config(){
 
 
 uint16_t M5Stack420MASensor::read_current(uint8_t channel) {
-  // Adjust according to how the MODULE_4_20MA sensor encodes its current values
-  // Here's an example reading a 16-bit current value from the specified channel
   uint8_t reg = MODULE_4_20MA_CURRENT_REG;
   uint8_t data[2] = {0};
   if (!this->read_bytes(reg, data, 2)) {
@@ -58,8 +56,6 @@ uint16_t M5Stack420MASensor::read_current(uint8_t channel) {
 }
 
 uint16_t M5Stack420MASensor::read_adc_12bit(uint8_t channel) {
-  // Adjust according to how the MODULE_4_20MA sensor encodes its current values
-  // Here's an example reading a 16-bit current value from the specified channel
   uint8_t reg = MODULE_4_20MA_ADC_12BIT_REG;
   uint8_t data[2] = {0};
   if (!this->read_bytes(reg, data, 2)) {

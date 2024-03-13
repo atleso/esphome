@@ -25,15 +25,18 @@ class M5Stack420MASensor : public sensor::Sensor, public PollingComponent, publi
     void set_current_sensor(sensor::Sensor *current_sensor) { this->current_sensor_ = current_sensor; }
     void set_raw_adc_sensor(sensor::Sensor *raw_adc_sensor) { this->raw_adc_sensor_ = raw_adc_sensor; }
     
-    sensor::Sensor *current_sensor_{nullptr};
-    sensor::Sensor *raw_adc_sensor_{nullptr};
 
     void setup() override;
     void update() override;
     void dump_config() override;
   
-    uint16_t read_current(uint8_t channel);
-    uint16_t read_adc_12bit(uint8_t channel);
+    //uint16_t read_current(uint8_t channel);
+    //uint16_t read_adc_12bit(uint8_t channel);
+
+  protected:
+    sensor::Sensor *current_sensor_{nullptr};
+    sensor::Sensor *raw_adc_sensor_{nullptr};
+
 
   private:
     static constexpr uint8_t kAddress = 0x55; // Default I2C address of the MODULE_4_20MA
