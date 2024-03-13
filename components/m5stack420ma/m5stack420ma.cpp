@@ -13,7 +13,7 @@ static const char *TAG = "m5stack420ma.sensor";
 void M5Stack420MASensor::setup(){
   ESP_LOGI(TAG, "M5Stack 4-20mA sensor setup");
   // Initialize the I2C device
-  this->set_address(kAddress);    
+  this->set_i2c_address(kAddress);    
 }
 
 void M5Stack420MASensor::update(){
