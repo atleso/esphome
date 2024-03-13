@@ -30,7 +30,7 @@ void M5Stack420MASensor::update(){
 
   // Publish the current value
   if (current_sensor != nullptr) {
-    current_sensor->publish_state(current_value);
+    current_sensor_->publish_state(current_value);
   }
 }
 
