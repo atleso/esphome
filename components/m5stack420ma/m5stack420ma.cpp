@@ -1,37 +1,51 @@
 #include "esphome.h"
-#include "MODULE_4_20MA.h"
+#include "esphome/core/log.h"
+#include "m5stack420ma.h"
 
-class M5Stack420MASensor : public PollingComponent {
- public:
-  // Create a sensor instance as a member, not by inheritance
-  Sensor *current_sensor{nullptr};
 
-  // Constructor for initializing the sensor with a polling interval
-  M5Stack420MASensor() : PollingComponent(5000) {} // Polling every 5 seconds
 
-  void set_sda_pin(uint8_t sda_pin) {
-    this->custom_sda_pin = sda_pin;
+
+namespace esphome {
+namespace m5stack420ma {
+
+static const char *TAG = "m5stack420ma.sensor";
+
+void M5Stack420MASensor::setup(){
+  ESP_LOGI(TAG, "M5Stack 4-20mA sensor setup");
+  // Initialize the I2C device
+  this->set_address(kAddress);    
+}
+
+void M5Stack420MASensor::update(){
+  // Assuming you want to read from channel 0
+  uint16_t current_value = this->read_current(0);
+  ESP_LOGD(TAG, "Read current value: %u", current_value);
+
+  // Publish the current value
+  if (current_sensor != nullptr) {
+    current_sensor->publish_state(current_value);
   }
+}
 
-  void set_scl_pin(uint8_t scl_pin) {
-    this->custom_scl_pin = scl_pin;
+void M5Stack420MASensor::dump_config(){
+  ESP_LOGCONFIG(TAG, "M5Stack 4-20mA Sensor:");
+  // Additional config values can be logged here
+}
+
+uint16_t M5Stack420MASensor::read_current(uint8_t channel) {
+  // Adjust according to how the MODULE_4_20MA sensor encodes its current values
+  // Here's an example reading a 16-bit current value from the specified channel
+  uint8_t reg = channel * 2 + MODULE_4_20MA_CURRENT_REG;
+  uint8_t data[2] = {0};
+  if (!this->read_bytes(reg, data, 2)) {
+    ESP_LOGW(TAG, "Failed to read current value from channel %d", channel);
+    return 0;
   }
+  uint16_t current = (uint16_t(data[0]) << 8) | uint16_t(data[1]);
+  return current;
+}
 
-  void setup() override {
-    // Assuming the `begin` method configures the module correctly
-    m5stack420ma.begin(&Wire, MODULE_4_20MA_ADDR, custom_sda_pin, custom_scl_pin);
-  }
+}  // namespace EmptyI2CSensor
+}  // namespace esphome
 
-  void update() override {
-    // Here you would read from your sensor and publish the value
-    uint16_t current_value = m5stack420ma.getCurrentValue(0);
-    if(current_sensor) {
-      current_sensor->publish_state(current_value);
-    }
-  }
 
- private:
-  MODULE_4_20MA m5stack420ma;
-  uint8_t custom_sda_pin = 2; // Default SDA pin
-  uint8_t custom_scl_pin = 1; // Default SCL pin
-};
