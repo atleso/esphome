@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import sensor
-from esphome.const import CONF_ID
+from esphome.const import CONF_ID, CONF_UPDATE_INTERVAL
 
 CONF_M5STACK420MA_ID = 'm5stack420ma_id'
 CONF_ENABLE_12BIT_MODE = 'enable_12bit_mode'
