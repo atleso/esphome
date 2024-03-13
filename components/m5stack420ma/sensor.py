@@ -5,15 +5,21 @@ from esphome.const import CONF_ID, ICON_EMPTY, UNIT_EMPTY, CONF_UNIT_OF_MEASUREM
 
 DEPENDENCIES = ['i2c']
 
+CONF_CURRENT_VALUE = "current_value"
+CONF_RAW_ADC = "raw_adc"
+
+
 m5stack420ma_ns = cg.esphome_ns.namespace('m5stack420ma')
 M5Stack420MASensor = m5stack420ma_ns.class_('M5Stack420MASensor', cg.PollingComponent, i2c.I2CDevice)
 
 CONFIG_SCHEMA = sensor.sensor_schema().extend({
     cv.GenerateID(): cv.declare_id(M5Stack420MASensor),
-    cv.Optional(CONF_UPDATE_INTERVAL): cv.update_interval,
-    cv.Optional(CONF_UNIT_OF_MEASUREMENT, default=UNIT_EMPTY): cv.string,
-    cv.Optional(CONF_ICON, default=ICON_EMPTY): cv.icon,
-    cv.Optional(CONF_ACCURACY_DECIMALS, default=1): cv.int_range(min=0, max=5),
+    cv.Optional(CONF_CURRENT_VALUE): sensor.sensor_schema(unit_of_measurement=UNIT_AMPERE, icon=ICON_CURRENT_AC, accuracy_decimals=2).extend({
+        cv.GenerateID(): cv.declare_id(sensor.Sensor),
+    }),
+    cv.Optional(CONF_RAW_ADC): sensor.sensor_schema(unit_of_measurement=UNIT_VOLT, icon=ICON_FLASH, accuracy_decimals=2).extend({
+        cv.GenerateID(): cv.declare_id(sensor.Sensor),
+    }),
 }).extend(i2c.i2c_device_schema(0x55))  # Assuming 0x55 is the default I2C address
 
 def to_code(config):
@@ -21,3 +27,10 @@ def to_code(config):
     yield cg.register_component(var, config)
     yield sensor.register_sensor(var, config)
     yield i2c.register_i2c_device(var, config)
+    
+    if CONF_CURRENT_VALUE in config:
+        sensor_ = yield sensor.new_sensor(config[CONF_CURRENT_VALUE])
+        cg.add(var.set_current_sensor(sensor_))
+    if CONF_RAW_ADC in config:
+        sensor_ = yield sensor.new_sensor(config[CONF_RAW_ADC])
+        cg.add(var.set_raw_adc_sensor(sensor_))

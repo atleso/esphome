@@ -32,6 +32,9 @@ void M5Stack420MASensor::update(){
   if (current_sensor_ != nullptr) {
     current_sensor_->publish_state(current_value);
   }
+  if (raw_adc_sensor_ != nullptr) {
+    raw_adc_sensor_->publish_state(adc_12bit_value);
+  }
 }
 
 void M5Stack420MASensor::dump_config(){
