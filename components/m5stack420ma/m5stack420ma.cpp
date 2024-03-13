@@ -42,7 +42,7 @@ uint16_t M5Stack420MASensor::read_current(uint8_t channel) {
   // Here's an example reading a 16-bit current value from the specified channel
   uint8_t reg = MODULE_4_20MA_CURRENT_REG;
   uint8_t data[2] = {0};
-  if (!this->read_bytes(0x55, data, 2)) {
+  if (!this->read_bytes(0x20, data, 2)) {
     ESP_LOGW(TAG, "Failed to read current value");
     return 0;
   }
