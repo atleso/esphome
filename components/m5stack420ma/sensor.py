@@ -15,8 +15,8 @@ CONFIG_SCHEMA = sensor.sensor_schema().extend({
     cv.GenerateID(): cv.declare_id(M5Stack420MASensor),
     cv.Optional(CONF_ENABLE_12BIT_MODE, default=False): cv.boolean,
     cv.Optional(CONF_UPDATE_INTERVAL): cv.update_interval,
-    cv.Optional(CONF_SDA_PIN): cv.pin,
-    cv.Optional(CONF_SCL_PIN): cv.pin,
+    cv.Optional(CONF_SDA_PIN): cv.gpio_pin,
+    cv.Optional(CONF_SCL_PIN): cv.gpio_pin,
 }).extend(i2c.i2c_device_schema(0x55))  # Assuming 0x55 is the default I2C address
 
 def to_code(config):
