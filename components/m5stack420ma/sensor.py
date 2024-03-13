@@ -14,6 +14,7 @@ M5Stack420MASensor = m5stack420ma_ns.class_('M5Stack420MASensor', cg.PollingComp
 
 CONFIG_SCHEMA = sensor.sensor_schema().extend({
     cv.GenerateID(): cv.declare_id(M5Stack420MASensor),
+    cv.Optional(): CONF_UPDATE_INTERVAL,
     cv.Optional(CONF_CURRENT_VALUE): sensor.sensor_schema(unit_of_measurement=UNIT_EMPTY, icon=ICON_EMPTY, accuracy_decimals=2).extend({
         cv.GenerateID(): cv.declare_id(sensor.Sensor),
     }),
