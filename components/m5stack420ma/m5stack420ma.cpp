@@ -14,7 +14,7 @@ void M5Stack420MASensor::setup(){
   ESP_LOGCONFIG(TAG, "Setting up M5Stack 4-20mA Sensor...");
   // Attempt to communicate with the sensor to ensure it's responding
   uint8_t data[2];
-  if (!this->read_bytes(0xFE, data, 1)) {
+  if (!this->read_bytes(0x0, data, 1)) {
     ESP_LOGE(TAG, "Failed to communicate with M5Stack 4-20mA sensor.");
     mark_failed();
   }
