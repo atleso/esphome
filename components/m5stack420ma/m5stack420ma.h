@@ -22,8 +22,8 @@ class M5Stack420MASensor : public sensor::Sensor, public PollingComponent, publi
   public:
     M5Stack420MASensor() = default;
     
-
-    sensor::Sensor *current_sensor{nullptr};
+    void set_current_sensor(sensor::Sensor *current_sensor) { this->current_sensor_ = current_sensor; }
+    sensor::Sensor *current_sensor_{nullptr};
 
     void setup() override;
     void update() override;

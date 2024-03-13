@@ -29,8 +29,8 @@ void M5Stack420MASensor::update(){
   ESP_LOGD(TAG, "Read adc value: %u", adc_12bit_value);
 
   // Publish the current value
-  if (current_sensor != nullptr) {
-    current_sensor->publish_state(current_value);
+  if (current_sensor_ != nullptr) {
+    current_sensor_->publish_state(current_value);
   }
 }
 
