@@ -28,7 +28,7 @@ class M5Stack420MASensor : public sensor::Sensor, public PollingComponent, publi
     void update() override;
     void dump_config() override;
   
-    uint16_t read_current(uint8_t channel);
+    uint16_t read_current();
 
   private:
     static constexpr uint8_t kAddress = 0x55; // Default I2C address of the MODULE_4_20MA
