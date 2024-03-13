@@ -32,13 +32,13 @@ void M5Stack420MASensor::dump_config(){
   // Additional config values can be logged here
 }
 
-uint16_t M5Stack420MASensor::read_current(uint8_t channel) {
+uint16_t M5Stack420MASensor::read_current() {
   // Adjust according to how the MODULE_4_20MA sensor encodes its current values
   // Here's an example reading a 16-bit current value from the specified channel
-  uint8_t reg = channel * 2 + MODULE_4_20MA_CURRENT_REG;
+  uint8_t reg = MODULE_4_20MA_CURRENT_REG;
   uint8_t data[2] = {0};
   if (!this->read_bytes(reg, data, 2)) {
-    ESP_LOGW(TAG, "Failed to read current value from channel %d", channel);
+    ESP_LOGW(TAG, "Failed to read current value");
     return 0;
   }
   uint16_t current = (uint16_t(data[0]) << 8) | uint16_t(data[1]);
