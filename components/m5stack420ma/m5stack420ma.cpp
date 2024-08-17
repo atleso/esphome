@@ -62,7 +62,7 @@ uint16_t M5Stack420MASensor::read_adc_12bit(uint8_t channel) {
     ESP_LOGW(TAG, "Failed to read raw adc value");
     return 0;
   }
-  uint16_t adc = (uint16_t(data[0]) << 8) | uint16_t(data[1]);
+  uint16_t adc = uint16_t(data[0]) | (uint16_t(data[1]) << 8);
   return adc;
 }
 
