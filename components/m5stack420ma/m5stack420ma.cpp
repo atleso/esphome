@@ -51,7 +51,7 @@ uint16_t M5Stack420MASensor::read_current(uint8_t channel) {
     ESP_LOGW(TAG, "Failed to read current value");
     return 0;
   }
-  uint16_t current = (uint16_t(data[0]) << 8) | uint16_t(data[1]);
+  uint16_t current = uint16_t(data[0]) | (uint16_t(data[1]) << 8);
   return current;
 }
 
@@ -67,7 +67,7 @@ uint16_t M5Stack420MASensor::read_adc_12bit(uint8_t channel) {
 }
 
 void M5Stack420MASensor::calibrate(uint16_t calibration_value) {
-    uint8_t data[2];
+    uint16_t data[2];
     data[0] = calibration_value & 0xFF;        // Low byte
     data[1] = (calibration_value >> 8) & 0xFF; // High byte
 
