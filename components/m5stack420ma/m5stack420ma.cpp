@@ -79,6 +79,10 @@ void M5Stack420MASensor::calibrate(uint16_t calibration_value) {
     }
 }
 
+void M5Stack420MASensor::test() {
+    ESP_LOGD(TAG, "Test method called successfully");
+}
+
 }  // namespace EmptyI2CSensor
 }  // namespace esphome
 
