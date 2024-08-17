@@ -23,7 +23,7 @@ void M5Stack420MASensor::setup(){
 
 void M5Stack420MASensor::update(){
   // Assuming you want to read from channel 0
-  uint16_t current_value = this->read_current(0);
+  float current_value = this->read_current(0);
   uint16_t adc_12bit_value = this->read_adc_12bit(0);
   ESP_LOGD(TAG, "Read current value: %u", current_value);
   ESP_LOGD(TAG, "Read adc value: %u", adc_12bit_value);
