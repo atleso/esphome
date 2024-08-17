@@ -27,6 +27,8 @@ class M5Stack420MASensor : public sensor::Sensor, public PollingComponent, publi
 
     void calibrate(uint16_t calibration_value);
 
+    void test_method() { ESP_LOGD(TAG, "Test method called"); })
+
     void setup() override;
     void update() override;
     void dump_config() override;
