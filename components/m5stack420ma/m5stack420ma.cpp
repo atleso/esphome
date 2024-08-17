@@ -66,6 +66,19 @@ uint16_t M5Stack420MASensor::read_adc_12bit(uint8_t channel) {
   return adc;
 }
 
+void M5Stack420MASensor::calibrate(uint16_t calibration_value) {
+    uint8_t data[2];
+    data[0] = (calibration_value >> 8) & 0xFF; // High byte
+    data[1] = calibration_value & 0xFF;        // Low byte
+
+    // Write to the calibration registers
+    if (!this->write_bytes(0x30, data, 2)) {
+        ESP_LOGW(TAG, "Failed to write calibration value");
+    } else {
+        ESP_LOGD(TAG, "Calibration successful, written value: %u", calibration_value);
+    }
+}
+
 }  // namespace EmptyI2CSensor
 }  // namespace esphome
 
