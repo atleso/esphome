@@ -33,7 +33,7 @@ class M5Stack420MASensor : public sensor::Sensor, public PollingComponent, publi
     void update() override;
     void dump_config() override;
   
-    uint16_t read_current(uint8_t channel);
+    float read_current(uint8_t channel);
     uint16_t read_adc_12bit(uint8_t channel);
 
   protected:
