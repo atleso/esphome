@@ -53,6 +53,7 @@ float M5Stack420MASensor::read_current(uint8_t channel) {
   }
   uint16_t current_raw = uint16_t(data[0]) | (uint16_t(data[1]) << 8);
   float current = current_raw / 100.0;
+  ESP_LOGD(TAG, "Raw current: %u, Converted current: %.2f mA", current_raw, current);
   return current;
 }
 
