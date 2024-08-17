@@ -24,7 +24,8 @@ class M5Stack420MASensor : public sensor::Sensor, public PollingComponent, publi
     
     void set_current_sensor(sensor::Sensor *current_sensor) { this->current_sensor_ = current_sensor; }
     void set_raw_adc_sensor(sensor::Sensor *raw_adc_sensor) { this->raw_adc_sensor_ = raw_adc_sensor; }
-    
+
+    void calibrate(uint16_t calibration_value);
 
     void setup() override;
     void update() override;
