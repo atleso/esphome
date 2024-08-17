@@ -68,8 +68,8 @@ uint16_t M5Stack420MASensor::read_adc_12bit(uint8_t channel) {
 
 void M5Stack420MASensor::calibrate(uint16_t calibration_value) {
     uint8_t data[2];
-    data[0] = (calibration_value >> 8) & 0xFF; // High byte
-    data[1] = calibration_value & 0xFF;        // Low byte
+    data[0] = calibration_value & 0xFF;        // Low byte
+    data[1] = (calibration_value >> 8) & 0xFF; // High byte
 
     // Write to the calibration registers
     if (!this->write_bytes(0x30, data, 2)) {
