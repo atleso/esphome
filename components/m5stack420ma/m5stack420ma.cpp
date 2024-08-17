@@ -44,14 +44,15 @@ void M5Stack420MASensor::dump_config(){
 
 
 
-uint16_t M5Stack420MASensor::read_current(uint8_t channel) {
+float M5Stack420MASensor::read_current(uint8_t channel) {
   uint8_t reg = MODULE_4_20MA_CURRENT_REG;
   uint8_t data[2] = {0};
   if (!this->read_bytes(reg, data, 2)) {
     ESP_LOGW(TAG, "Failed to read current value");
     return 0;
   }
-  uint16_t current = uint16_t(data[0]) | (uint16_t(data[1]) << 8);
+  uint16_t current_raw = uint16_t(data[0]) | (uint16_t(data[1]) << 8);
+  float current = current_raw / 100.0;
   return current;
 }
 
