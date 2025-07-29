@@ -63,8 +63,10 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value()) {
     float temp = *call.get_target_temperature();
     ESP_LOGI(TAG, "Setting target temperature: %.1f", temp);
-    auto cmd = modbus_controller::ModbusCommandItem::create_write_single_register(
-      1001, static_cast<uint16_t>(temp * 10),
+    modbus_controller::ModbusCommandItem cmd(
+      modbus_controller::ModbusFunctionCode::FUNC_WRITE_SINGLE_REGISTER,
+      1001,
+      {static_cast<uint16_t>(temp * 10)},
       [this, temp](const std::vector<uint8_t> &data) {
         this->target_temperature = temp;
         ESP_LOGD(TAG, "Setpoint written, confirmed: %.1f", temp);
@@ -79,8 +81,10 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
     ESP_LOGI(TAG, "Requested custom fan mode change to: %s", mode.c_str());
     int reg_val = fan_mode_to_reg(mode);
     if (reg_val != 8) { // 8 = COOKERHOOD, read-only
-      auto cmd = modbus_controller::ModbusCommandItem::create_write_single_register(
-        1162, static_cast<uint16_t>(reg_val),
+      modbus_controller::ModbusCommandItem cmd(
+        modbus_controller::ModbusFunctionCode::FUNC_WRITE_SINGLE_REGISTER,
+        1162,
+        {static_cast<uint16_t>(reg_val)},
         [this, reg_val](const std::vector<uint8_t> &data) {
           ESP_LOGD(TAG, "Fan mode written, confirmed: %d", reg_val);
         }
@@ -95,8 +99,10 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
 void SaveVTRClimate::update() {
   if (this->modbus_ != nullptr) {
     // Read room temperature (REG_ROOM_TEMP = 1000)
-    auto cmd_temp = modbus_controller::ModbusCommandItem::create_read_holding_register(
-      1000, 1,
+    modbus_controller::ModbusCommandItem cmd_temp(
+      modbus_controller::ModbusFunctionCode::FUNC_READ_HOLDING_REGISTERS,
+      1000,
+      {1},
       [this](const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
           uint16_t temp_raw = (data[0] << 8) | data[1];
@@ -107,8 +113,10 @@ void SaveVTRClimate::update() {
     this->modbus_->queue_command(cmd_temp);
 
     // Read setpoint (REG_SETPOINT = 1001)
-    auto cmd_setpoint = modbus_controller::ModbusCommandItem::create_read_holding_register(
-      1001, 1,
+    modbus_controller::ModbusCommandItem cmd_setpoint(
+      modbus_controller::ModbusFunctionCode::FUNC_READ_HOLDING_REGISTERS,
+      1001,
+      {1},
       [this](const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
           uint16_t setpoint_raw = (data[0] << 8) | data[1];
@@ -119,8 +127,10 @@ void SaveVTRClimate::update() {
     this->modbus_->queue_command(cmd_setpoint);
 
     // Read active fan mode from REG_USERMODE_MODE (1162)
-    auto cmd_fan = modbus_controller::ModbusCommandItem::create_read_holding_register(
-      1162, 1,
+    modbus_controller::ModbusCommandItem cmd_fan(
+      modbus_controller::ModbusFunctionCode::FUNC_READ_HOLDING_REGISTERS,
+      1162,
+      {1},
       [this](const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
           uint16_t fanmode_raw = (data[0] << 8) | data[1];
