@@ -89,29 +89,31 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
 
 void SaveVTRClimate::update() {
   if (this->modbus_ != nullptr) {
-    // Read room temperature (register 1000)
+    // Read room temperature (register 2001) - signed 16-bit
     auto cmd_temp = modbus_controller::ModbusCommandItem::create_read_command(
-      this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 1000, 1,
+      this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 2001, 1,
       [this](modbus_controller::ModbusRegisterType register_type, uint16_t start_address, 
               const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
-          uint16_t temp_raw = (data[0] << 8) | data[1];
+          // Convert to signed 16-bit integer
+          int16_t temp_raw = static_cast<int16_t>((data[0] << 8) | data[1]);
           this->current_temperature = temp_raw / 10.0f;
-          ESP_LOGD(TAG, "Read room temperature: %.1f", this->current_temperature);
+          ESP_LOGD(TAG, "Read room temperature: %.1f (raw: %d)", this->current_temperature, temp_raw);
         }
       }
     );
     this->modbus_->queue_command(cmd_temp);
     
-    // Read setpoint (register 1001)
+    // Read setpoint (register 2054) - signed 16-bit
     auto cmd_setpoint = modbus_controller::ModbusCommandItem::create_read_command(
-      this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 1001, 1,
+      this->modbus_, modbus_controller::ModbusRegisterType::READ, 2054, 1,
       [this](modbus_controller::ModbusRegisterType register_type, uint16_t start_address, 
               const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
-          uint16_t setpoint_raw = (data[0] << 8) | data[1];
+          // Convert to signed 16-bit integer
+          int16_t setpoint_raw = static_cast<int16_t>((data[0] << 8) | data[1]);
           this->target_temperature = setpoint_raw / 10.0f;
-          ESP_LOGD(TAG, "Read setpoint: %.1f", this->target_temperature);
+          ESP_LOGD(TAG, "Read setpoint: %.1f (raw: %d)", this->target_temperature, setpoint_raw);
         }
       }
     );
