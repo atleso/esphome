@@ -15,6 +15,7 @@ void SaveVTRClimate::dump_config() {
   ESP_LOGCONFIG(TAG, "SaveVTRClimate:");
   LOG_CLIMATE("  ", "SaveVTRClimate", this);
   ESP_LOGCONFIG(TAG, "  Using direct Modbus for temperature, setpoint, and fan mode");
+  ESP_LOGCONFIG(TAG, "  Heat demand: %.0f%%", this->heat_demand_percent_);
 }
 
 
@@ -132,6 +133,21 @@ void SaveVTRClimate::update() {
       }
     );
     this->modbus_->queue_command(cmd_fan);
+    
+    // Read heat demand (register 2055) - uint16, read-only
+    auto cmd_heat_demand = modbus_controller::ModbusCommandItem::create_read_command(
+      this->modbus_, modbus_controller::ModbusRegisterType::READ, 2055, 1,
+      [this](modbus_controller::ModbusRegisterType register_type, uint16_t start_address, 
+              const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          // Convert to unsigned 16-bit integer (should be 0-100)
+          uint16_t heat_demand_raw = (data[0] << 8) | data[1];
+          this->heat_demand_percent_ = static_cast<float>(heat_demand_raw);
+          ESP_LOGD(TAG, "Read heat demand: %.0f%% (raw: %u)", this->heat_demand_percent_, heat_demand_raw);
+        }
+      }
+    );
+    this->modbus_->queue_command(cmd_heat_demand);
   }
   
   // Publish state after a short delay to allow async operations to complete
