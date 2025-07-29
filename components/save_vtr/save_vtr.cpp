@@ -1,3 +1,6 @@
+void SaveVTRClimate::set_modbus(modbus_controller::ModbusController *modbus) {
+  this->modbus_ = modbus;
+}
 // save_vtr.cpp
 #include "save_vtr.h"
 #include "esphome/core/log.h"
