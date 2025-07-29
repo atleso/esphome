@@ -16,8 +16,8 @@ void SaveVTRClimate::dump_config() {
   LOG_CLIMATE("  ", "SaveVTRClimate", this);
   ESP_LOGCONFIG(TAG, "  Using direct Modbus for temperature, setpoint, and fan mode");
   ESP_LOGCONFIG(TAG, "  Heat demand: %.0f%%", this->heat_demand_percent_);
-  ESP_LOGCONFIG(TAG, "  Supply Air Flow: %.0f%% / %.1f m³/h", this->saf_percent_, this->saf_volume_m3h_);
-  ESP_LOGCONFIG(TAG, "  Extract Air Flow: %.0f%% / %.1f m³/h", this->eaf_percent_, this->eaf_volume_m3h_);
+  ESP_LOGCONFIG(TAG, "  Supply Air Flow: %.0f%% / %.1f m³/h", this->saf_percent_, this->saf_volume_);
+  ESP_LOGCONFIG(TAG, "  Extract Air Flow: %.0f%% / %.1f m³/h", this->eaf_percent_, this->eaf_volume_);
 }
 
 
@@ -160,8 +160,8 @@ void SaveVTRClimate::update() {
           // Convert to unsigned 16-bit integer
           uint16_t saf_raw = (data[0] << 8) | data[1];
           this->saf_percent_ = static_cast<float>(saf_raw);
-          this->saf_volume_m3h_ = static_cast<float>(saf_raw);  // Direct value, no scaling
-          ESP_LOGD(TAG, "Read SAF: %.0f%% / %.1f m³/h (raw: %u)", this->saf_percent_, this->saf_volume_m3h_, saf_raw);
+          this->saf_volume_ = static_cast<float>(saf_raw);  // Direct value, no scaling
+          ESP_LOGD(TAG, "Read SAF: %.0f%% / %.1f m³/h (raw: %u)", this->saf_percent_, this->saf_volume_, saf_raw);
         }
       }
     );
@@ -176,8 +176,8 @@ void SaveVTRClimate::update() {
           // Convert to unsigned 16-bit integer
           uint16_t eaf_raw = (data[0] << 8) | data[1];
           this->eaf_percent_ = static_cast<float>(eaf_raw);
-          this->eaf_volume_m3h_ = static_cast<float>(eaf_raw);  // Direct value, no scaling
-          ESP_LOGD(TAG, "Read EAF: %.0f%% / %.1f m³/h (raw: %u)", this->eaf_percent_, this->eaf_volume_m3h_, eaf_raw);
+          this->eaf_volume_ = static_cast<float>(eaf_raw);  // Direct value, no scaling
+          ESP_LOGD(TAG, "Read EAF: %.0f%% / %.1f m³/h (raw: %u)", this->eaf_percent_, this->eaf_volume_, eaf_raw);
         }
       }
     );
