@@ -63,12 +63,13 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value()) {
     float temp = *call.get_target_temperature();
     ESP_LOGI(TAG, "Setting target temperature: %.1f", temp);
-    auto *cmd = new modbus_controller::ModbusCommandItem();
-    cmd->setup_write_single_register(1001, static_cast<uint16_t>(temp * 10));
-    cmd->on_data([this, temp](const std::vector<uint8_t> &data) {
-      this->target_temperature = temp;
-      ESP_LOGD(TAG, "Setpoint written, confirmed: %.1f", temp);
-    });
+    auto cmd = modbus_controller::ModbusCommandItem::create_write_single_register(
+      1001, static_cast<uint16_t>(temp * 10),
+      [this, temp](const std::vector<uint8_t> &data) {
+        this->target_temperature = temp;
+        ESP_LOGD(TAG, "Setpoint written, confirmed: %.1f", temp);
+      }
+    );
     this->modbus_->queue_command(cmd);
   }
 
@@ -78,11 +79,12 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
     ESP_LOGI(TAG, "Requested custom fan mode change to: %s", mode.c_str());
     int reg_val = fan_mode_to_reg(mode);
     if (reg_val != 8) { // 8 = COOKERHOOD, read-only
-      auto *cmd = new modbus_controller::ModbusCommandItem();
-      cmd->setup_write_single_register(1162, static_cast<uint16_t>(reg_val));
-      cmd->on_data([this, reg_val](const std::vector<uint8_t> &data) {
-        ESP_LOGD(TAG, "Fan mode written, confirmed: %d", reg_val);
-      });
+      auto cmd = modbus_controller::ModbusCommandItem::create_write_single_register(
+        1162, static_cast<uint16_t>(reg_val),
+        [this, reg_val](const std::vector<uint8_t> &data) {
+          ESP_LOGD(TAG, "Fan mode written, confirmed: %d", reg_val);
+        }
+      );
       this->modbus_->queue_command(cmd);
     }
   }
@@ -93,36 +95,39 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
 void SaveVTRClimate::update() {
   if (this->modbus_ != nullptr) {
     // Read room temperature (REG_ROOM_TEMP = 1000)
-    auto *cmd_temp = new modbus_controller::ModbusCommandItem();
-    cmd_temp->setup_read_holding_register(1000, 1);
-    cmd_temp->on_data([this](const std::vector<uint8_t> &data) {
-      if (data.size() >= 2) {
-        uint16_t temp_raw = (data[0] << 8) | data[1];
-        this->current_temperature = temp_raw / 10.0f;
+    auto cmd_temp = modbus_controller::ModbusCommandItem::create_read_holding_register(
+      1000, 1,
+      [this](const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          uint16_t temp_raw = (data[0] << 8) | data[1];
+          this->current_temperature = temp_raw / 10.0f;
+        }
       }
-    });
+    );
     this->modbus_->queue_command(cmd_temp);
 
     // Read setpoint (REG_SETPOINT = 1001)
-    auto *cmd_setpoint = new modbus_controller::ModbusCommandItem();
-    cmd_setpoint->setup_read_holding_register(1001, 1);
-    cmd_setpoint->on_data([this](const std::vector<uint8_t> &data) {
-      if (data.size() >= 2) {
-        uint16_t setpoint_raw = (data[0] << 8) | data[1];
-        this->target_temperature = setpoint_raw / 10.0f;
+    auto cmd_setpoint = modbus_controller::ModbusCommandItem::create_read_holding_register(
+      1001, 1,
+      [this](const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          uint16_t setpoint_raw = (data[0] << 8) | data[1];
+          this->target_temperature = setpoint_raw / 10.0f;
+        }
       }
-    });
+    );
     this->modbus_->queue_command(cmd_setpoint);
 
     // Read active fan mode from REG_USERMODE_MODE (1162)
-    auto *cmd_fan = new modbus_controller::ModbusCommandItem();
-    cmd_fan->setup_read_holding_register(1162, 1);
-    cmd_fan->on_data([this](const std::vector<uint8_t> &data) {
-      if (data.size() >= 2) {
-        uint16_t fanmode_raw = (data[0] << 8) | data[1];
-        this->custom_fan_mode = reg_to_fan_mode_string(fanmode_raw);
+    auto cmd_fan = modbus_controller::ModbusCommandItem::create_read_holding_register(
+      1162, 1,
+      [this](const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          uint16_t fanmode_raw = (data[0] << 8) | data[1];
+          this->custom_fan_mode = reg_to_fan_mode_string(fanmode_raw);
+        }
       }
-    });
+    );
     this->modbus_->queue_command(cmd_fan);
   }
   this->publish_state();
