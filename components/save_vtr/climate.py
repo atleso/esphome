@@ -9,13 +9,13 @@ DEPENDENCIES = ["modbus_controller"]
 save_vtr_ns = cg.esphome_ns.namespace("save_vtr")
 SaveVTRClimate = save_vtr_ns.class_("SaveVTRClimate", climate.Climate, cg.PollingComponent)
 
-CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend(
+CONFIG_SCHEMA = climate.climate_schema(SaveVTRClimate).extend(
     {
-        cv.GenerateID(): cv.declare_id(SaveVTRClimate),
         cv.Required("modbus_id"): cv.use_id(ModbusController),
         cv.Optional(CONF_UPDATE_INTERVAL, default="30s"): cv.update_interval,
     }
 )
+
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
