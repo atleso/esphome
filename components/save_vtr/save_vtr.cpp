@@ -19,8 +19,7 @@ climate::ClimateTraits SaveVTRClimate::traits() {
 void SaveVTRClimate::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value()) {
     float temp = *call.get_target_temperature();
-    ESP_LOGI(TAG, "Setting setpoint to %.1f°C", temp);
-    modbus_->queue_write_register(2001, static_cast<uint16_t>(temp * 10));  // REG_TC_SP
+    modbus_->queue_write_register(2001, static_cast<uint16_t>(temp * 10));
     this->target_temperature = temp;
   }
 
@@ -35,8 +34,7 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
     else if (mode == "AWAY") val = 6;
     else if (mode == "HOLIDAY") val = 7;
 
-    ESP_LOGI(TAG, "Setting SAVE mode: %s (%u)", mode.c_str(), val);
-    modbus_->queue_write_register(1162, val);  // REG_USERMODE_HMI_CHANGE_REQUEST
+    modbus_->queue_write_register(1162, val);
     this->custom_fan_mode = mode;
   }
 
@@ -71,3 +69,11 @@ void SaveVTRClimate::update() {
 
 }  // namespace save_vtr
 }  // namespace esphome
+
+// REGISTER!
+#include "esphome/core/application.h"
+
+using namespace esphome;
+using namespace save_vtr;
+
+ESPHOME_COMPONENT_REGISTER("save_vtr", SaveVTRClimate)
