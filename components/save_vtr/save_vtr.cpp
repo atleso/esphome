@@ -45,7 +45,7 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
 
   if (call.get_fan_mode().has_value()) {
     auto mode = *call.get_fan_mode();
-    ESP_LOGI(TAG, "Requested fan mode change to: %s", climate::fan_mode_to_string(mode).c_str());
+    ESP_LOGI(TAG, "Requested fan mode change to: %s", climate::climate_fan_mode_to_string(mode));
     // Optional: Set a select or binary switch here if needed
   }
 
