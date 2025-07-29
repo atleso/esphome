@@ -26,6 +26,9 @@ class SaveVTRClimate : public climate::Climate, public PollingComponent {
   float saf_volume_{0.0f};           // Supply Air Flow volume (0-300 m³/h)
   float eaf_percent_{0.0f};          // Extract Air Flow percentage (0-100%)
   float eaf_volume_{0.0f};           // Extract Air Flow volume (0-300 m³/h)
+  float outdoor_air_temp_{0.0f};     // Outdoor air temperature (°C)
+  float supply_air_temp_{0.0f};      // Supply air temperature (°C)
+  float extract_air_temp_{0.0f};     // Extract air temperature (°C)
 };
 
 }  // namespace save_vtr

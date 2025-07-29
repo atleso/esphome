@@ -18,6 +18,9 @@ void SaveVTRClimate::dump_config() {
   ESP_LOGCONFIG(TAG, "  Heat demand: %.0f%%", this->heat_demand_percent_);
   ESP_LOGCONFIG(TAG, "  Supply Air Flow: %.0f%% / %.1f m³/h", this->saf_percent_, this->saf_volume_);
   ESP_LOGCONFIG(TAG, "  Extract Air Flow: %.0f%% / %.1f m³/h", this->eaf_percent_, this->eaf_volume_);
+  ESP_LOGCONFIG(TAG, "  Outdoor Air Temp: %.1f°C", this->outdoor_air_temp_);
+  ESP_LOGCONFIG(TAG, "  Supply Air Temp: %.1f°C", this->supply_air_temp_);
+  ESP_LOGCONFIG(TAG, "  Extract Air Temp: %.1f°C", this->extract_air_temp_);
 }
 
 
@@ -182,6 +185,51 @@ void SaveVTRClimate::update() {
       }
     );
     this->modbus_->queue_command(cmd_eaf);
+    
+    // Read Outdoor Air Temperature (register 12102) - signed int16
+    auto cmd_oat = modbus_controller::ModbusCommandItem::create_read_command(
+      this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 12102, 1,
+      [this](modbus_controller::ModbusRegisterType register_type, uint16_t start_address, 
+              const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          // Convert to signed 16-bit integer
+          int16_t temp_raw = static_cast<int16_t>((data[0] << 8) | data[1]);
+          this->outdoor_air_temp_ = temp_raw / 10.0f;
+          ESP_LOGD(TAG, "Read OAT: %.1f°C (raw: %d)", this->outdoor_air_temp_, temp_raw);
+        }
+      }
+    );
+    this->modbus_->queue_command(cmd_oat);
+    
+    // Read Supply Air Temperature (register 12103) - signed int16
+    auto cmd_sat = modbus_controller::ModbusCommandItem::create_read_command(
+      this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 12103, 1,
+      [this](modbus_controller::ModbusRegisterType register_type, uint16_t start_address, 
+              const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          // Convert to signed 16-bit integer
+          int16_t temp_raw = static_cast<int16_t>((data[0] << 8) | data[1]);
+          this->supply_air_temp_ = temp_raw / 10.0f;
+          ESP_LOGD(TAG, "Read SAT: %.1f°C (raw: %d)", this->supply_air_temp_, temp_raw);
+        }
+      }
+    );
+    this->modbus_->queue_command(cmd_sat);
+    
+    // Read Extract Air Temperature (register 12105) - signed int16
+    auto cmd_eat = modbus_controller::ModbusCommandItem::create_read_command(
+      this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 12105, 1,
+      [this](modbus_controller::ModbusRegisterType register_type, uint16_t start_address, 
+              const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          // Convert to signed 16-bit integer
+          int16_t temp_raw = static_cast<int16_t>((data[0] << 8) | data[1]);
+          this->extract_air_temp_ = temp_raw / 10.0f;
+          ESP_LOGD(TAG, "Read EAT: %.1f°C (raw: %d)", this->extract_air_temp_, temp_raw);
+        }
+      }
+    );
+    this->modbus_->queue_command(cmd_eat);
   }
   
   // Publish state after a short delay to allow async operations to complete
