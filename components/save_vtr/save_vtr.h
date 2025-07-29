@@ -3,8 +3,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/climate/climate.h"
-#include "esphome/components/sensor/sensor.h"
-#include "esphome/components/number/number.h"
+
 #include "esphome/components/modbus_controller/modbus_controller.h"
 
 namespace esphome {
