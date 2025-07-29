@@ -22,6 +22,10 @@ class SaveVTRClimate : public climate::Climate, public PollingComponent {
  protected:
   modbus_controller::ModbusController *modbus_{nullptr};
   float heat_demand_percent_{0.0f};  // Heat demand percentage (0-100%)
+  float saf_percent_{0.0f};          // Supply Air Flow percentage (0-100%)
+  float saf_volume_{0.0f};           // Supply Air Flow volume (0-300 m³/h)
+  float eaf_percent_{0.0f};          // Extract Air Flow percentage (0-100%)
+  float eaf_volume_{0.0f};           // Extract Air Flow volume (0-300 m³/h)
 };
 
 }  // namespace save_vtr

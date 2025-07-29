@@ -16,6 +16,8 @@ void SaveVTRClimate::dump_config() {
   LOG_CLIMATE("  ", "SaveVTRClimate", this);
   ESP_LOGCONFIG(TAG, "  Using direct Modbus for temperature, setpoint, and fan mode");
   ESP_LOGCONFIG(TAG, "  Heat demand: %.0f%%", this->heat_demand_percent_);
+  ESP_LOGCONFIG(TAG, "  Supply Air Flow: %.0f%% / %.1f m³/h", this->saf_percent_, this->saf_volume_m3h_);
+  ESP_LOGCONFIG(TAG, "  Extract Air Flow: %.0f%% / %.1f m³/h", this->eaf_percent_, this->eaf_volume_m3h_);
 }
 
 
@@ -148,6 +150,38 @@ void SaveVTRClimate::update() {
       }
     );
     this->modbus_->queue_command(cmd_heat_demand);
+    
+    // Read Supply Air Flow (register 14001) - uint16, read-only
+    auto cmd_saf = modbus_controller::ModbusCommandItem::create_read_command(
+      this->modbus_, modbus_controller::ModbusRegisterType::READ, 14001, 1,
+      [this](modbus_controller::ModbusRegisterType register_type, uint16_t start_address, 
+              const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          // Convert to unsigned 16-bit integer
+          uint16_t saf_raw = (data[0] << 8) | data[1];
+          this->saf_percent_ = static_cast<float>(saf_raw);
+          this->saf_volume_m3h_ = static_cast<float>(saf_raw);  // Direct value, no scaling
+          ESP_LOGD(TAG, "Read SAF: %.0f%% / %.1f m³/h (raw: %u)", this->saf_percent_, this->saf_volume_m3h_, saf_raw);
+        }
+      }
+    );
+    this->modbus_->queue_command(cmd_saf);
+    
+    // Read Extract Air Flow (register 14002) - uint16, read-only
+    auto cmd_eaf = modbus_controller::ModbusCommandItem::create_read_command(
+      this->modbus_, modbus_controller::ModbusRegisterType::READ, 14002, 1,
+      [this](modbus_controller::ModbusRegisterType register_type, uint16_t start_address, 
+              const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          // Convert to unsigned 16-bit integer
+          uint16_t eaf_raw = (data[0] << 8) | data[1];
+          this->eaf_percent_ = static_cast<float>(eaf_raw);
+          this->eaf_volume_m3h_ = static_cast<float>(eaf_raw);  // Direct value, no scaling
+          ESP_LOGD(TAG, "Read EAF: %.0f%% / %.1f m³/h (raw: %u)", this->eaf_percent_, this->eaf_volume_m3h_, eaf_raw);
+        }
+      }
+    );
+    this->modbus_->queue_command(cmd_eaf);
   }
   
   // Publish state after a short delay to allow async operations to complete
