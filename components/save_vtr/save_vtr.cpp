@@ -64,7 +64,7 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
     float temp = *call.get_target_temperature();
     ESP_LOGI(TAG, "Setting target temperature: %.1f", temp);
     modbus_controller::ModbusCommandItem cmd(
-      modbus_controller::ModbusFunctionCode::FUNC_WRITE_SINGLE_REGISTER,
+      modbus_controller::ModbusFunctionCode::WRITE_SINGLE_REGISTER,
       1001,
       {static_cast<uint16_t>(temp * 10)},
       [this, temp](const std::vector<uint8_t> &data) {
@@ -82,7 +82,7 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
     int reg_val = fan_mode_to_reg(mode);
     if (reg_val != 8) { // 8 = COOKERHOOD, read-only
       modbus_controller::ModbusCommandItem cmd(
-        modbus_controller::ModbusFunctionCode::FUNC_WRITE_SINGLE_REGISTER,
+        modbus_controller::ModbusFunctionCode::WRITE_SINGLE_REGISTER,
         1162,
         {static_cast<uint16_t>(reg_val)},
         [this, reg_val](const std::vector<uint8_t> &data) {
@@ -100,7 +100,7 @@ void SaveVTRClimate::update() {
   if (this->modbus_ != nullptr) {
     // Read room temperature (REG_ROOM_TEMP = 1000)
     modbus_controller::ModbusCommandItem cmd_temp(
-      modbus_controller::ModbusFunctionCode::FUNC_READ_HOLDING_REGISTERS,
+      modbus_controller::ModbusFunctionCode::READ_HOLDING_REGISTERS,
       1000,
       {1},
       [this](const std::vector<uint8_t> &data) {
@@ -114,7 +114,7 @@ void SaveVTRClimate::update() {
 
     // Read setpoint (REG_SETPOINT = 1001)
     modbus_controller::ModbusCommandItem cmd_setpoint(
-      modbus_controller::ModbusFunctionCode::FUNC_READ_HOLDING_REGISTERS,
+      modbus_controller::ModbusFunctionCode::READ_HOLDING_REGISTERS,
       1001,
       {1},
       [this](const std::vector<uint8_t> &data) {
@@ -128,7 +128,7 @@ void SaveVTRClimate::update() {
 
     // Read active fan mode from REG_USERMODE_MODE (1162)
     modbus_controller::ModbusCommandItem cmd_fan(
-      modbus_controller::ModbusFunctionCode::FUNC_READ_HOLDING_REGISTERS,
+      modbus_controller::ModbusFunctionCode::READ_HOLDING_REGISTERS,
       1162,
       {1},
       [this](const std::vector<uint8_t> &data) {
