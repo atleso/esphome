@@ -17,51 +17,41 @@ void SaveVTRClimate::dump_config() {
   ESP_LOGCONFIG(TAG, "  Using direct Modbus for temperature, setpoint, and fan mode");
 }
 
-using climate::ClimateFanMode;
 
-// Map register value to ClimateFanMode (custom modes)
-static ClimateFanMode reg_to_fan_mode(int reg) {
+// Map register value to custom fan mode string
+static std::string reg_to_fan_mode_string(int reg) {
   switch (reg) {
-    case 1: return ClimateFanMode::CLIMATE_FAN_MODE_AUTO;
-    case 2: return ClimateFanMode::CLIMATE_FAN_MODE_1; // MANUAL
-    case 3: return ClimateFanMode::CLIMATE_FAN_MODE_2; // CROWDED
-    case 4: return ClimateFanMode::CLIMATE_FAN_MODE_3; // REFRESH
-    case 5: return ClimateFanMode::CLIMATE_FAN_MODE_4; // FIREPLACE
-    case 6: return ClimateFanMode::CLIMATE_FAN_MODE_5; // AWAY
-    case 7: return ClimateFanMode::CLIMATE_FAN_MODE_6; // HOLIDAY
-    case 8: return ClimateFanMode::CLIMATE_FAN_MODE_7; // COOKERHOOD
-    default: return ClimateFanMode::CLIMATE_FAN_MODE_AUTO;
+    case 1: return "AUTO";
+    case 2: return "MANUAL";
+    case 3: return "CROWDED";
+    case 4: return "REFRESH";
+    case 5: return "FIREPLACE";
+    case 6: return "AWAY";
+    case 7: return "HOLIDAY";
+    case 8: return "COOKERHOOD";
+    default: return "AUTO";
   }
 }
 
-// Map ClimateFanMode to register value (custom modes)
-static int fan_mode_to_reg(ClimateFanMode mode) {
-  switch (mode) {
-    case ClimateFanMode::CLIMATE_FAN_MODE_AUTO: return 1;
-    case ClimateFanMode::CLIMATE_FAN_MODE_1: return 2; // MANUAL
-    case ClimateFanMode::CLIMATE_FAN_MODE_2: return 3; // CROWDED
-    case ClimateFanMode::CLIMATE_FAN_MODE_3: return 4; // REFRESH
-    case ClimateFanMode::CLIMATE_FAN_MODE_4: return 5; // FIREPLACE
-    case ClimateFanMode::CLIMATE_FAN_MODE_5: return 6; // AWAY
-    case ClimateFanMode::CLIMATE_FAN_MODE_6: return 7; // HOLIDAY
-    case ClimateFanMode::CLIMATE_FAN_MODE_7: return 8; // COOKERHOOD
-    default: return 1;
-  }
+// Map custom fan mode string to register value
+static int fan_mode_to_reg(const std::string &mode) {
+  if (mode == "AUTO") return 1;
+  if (mode == "MANUAL") return 2;
+  if (mode == "CROWDED") return 3;
+  if (mode == "REFRESH") return 4;
+  if (mode == "FIREPLACE") return 5;
+  if (mode == "AWAY") return 6;
+  if (mode == "HOLIDAY") return 7;
+  if (mode == "COOKERHOOD") return 8;
+  return 1;
 }
 
 climate::ClimateTraits SaveVTRClimate::traits() {
   auto traits = climate::ClimateTraits();
   traits.set_supports_current_temperature(true);
   traits.set_supported_modes({climate::CLIMATE_MODE_HEAT, climate::CLIMATE_MODE_OFF});
-  traits.set_supported_fan_modes({
-    ClimateFanMode::CLIMATE_FAN_MODE_AUTO,   // AUTO
-    ClimateFanMode::CLIMATE_FAN_MODE_1,      // MANUAL
-    ClimateFanMode::CLIMATE_FAN_MODE_2,      // CROWDED
-    ClimateFanMode::CLIMATE_FAN_MODE_3,      // REFRESH
-    ClimateFanMode::CLIMATE_FAN_MODE_4,      // FIREPLACE
-    ClimateFanMode::CLIMATE_FAN_MODE_5,      // AWAY
-    ClimateFanMode::CLIMATE_FAN_MODE_6,      // HOLIDAY
-    ClimateFanMode::CLIMATE_FAN_MODE_7       // COOKERHOOD
+  traits.set_supported_custom_fan_modes({
+    "AUTO", "MANUAL", "CROWDED", "REFRESH", "FIREPLACE", "AWAY", "HOLIDAY", "COOKERHOOD"
   });
   return traits;
 }
@@ -73,21 +63,39 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value()) {
     float temp = *call.get_target_temperature();
     ESP_LOGI(TAG, "Setting target temperature: %.1f", temp);
-    auto *cmd = new modbus_controller::ModbusCommandItem();
-    cmd->setup_write_single_register(1001, static_cast<uint16_t>(temp * 10));
-    this->modbus_->queue_command(cmd);
-    this->target_temperature = temp;
+    this->modbus_->queue_custom_command(
+      1, // unit id
+      modbus_controller::ModbusFunctionCode::WRITE_SINGLE_REGISTER,
+      1001, // setpoint register
+      {static_cast<uint16_t>(temp * 10)},
+      [this, temp](const std::vector<uint8_t> &data) {
+        this->target_temperature = temp;
+        ESP_LOGD(TAG, "Setpoint written, confirmed: %.1f", temp);
+      },
+      [this](modbus_controller::ModbusCommandItem *item, modbus_controller::ModbusError err) {
+        ESP_LOGW(TAG, "Failed to write setpoint: %d", err);
+      }
+    );
   }
 
-  // Write fan mode to Modbus if requested
-  if (call.get_fan_mode().has_value()) {
-    ClimateFanMode mode = *call.get_fan_mode();
-    ESP_LOGI(TAG, "Requested fan mode change to: %s", climate::climate_fan_mode_to_string(mode));
+  // Write custom fan mode to Modbus if requested
+  if (call.get_custom_fan_mode().has_value()) {
+    std::string mode = *call.get_custom_fan_mode();
+    ESP_LOGI(TAG, "Requested custom fan mode change to: %s", mode.c_str());
     int reg_val = fan_mode_to_reg(mode);
     if (reg_val != 8) { // 8 = COOKERHOOD, read-only
-      auto *cmd = new modbus_controller::ModbusCommandItem();
-      cmd->setup_write_single_register(1162, reg_val);
-      this->modbus_->queue_command(cmd);
+      this->modbus_->queue_custom_command(
+        1, // unit id
+        modbus_controller::ModbusFunctionCode::WRITE_SINGLE_REGISTER,
+        1162, // fan mode register
+        {static_cast<uint16_t>(reg_val)},
+        [this, reg_val](const std::vector<uint8_t> &data) {
+          ESP_LOGD(TAG, "Fan mode written, confirmed: %d", reg_val);
+        },
+        [this](modbus_controller::ModbusCommandItem *item, modbus_controller::ModbusError err) {
+          ESP_LOGW(TAG, "Failed to write fan mode: %d", err);
+        }
+      );
     }
   }
 
@@ -97,31 +105,55 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
 void SaveVTRClimate::update() {
   if (this->modbus_ != nullptr) {
     // Read room temperature (REG_ROOM_TEMP = 1000)
-    auto *cmd_temp = new modbus_controller::ModbusCommandItem();
-    cmd_temp->setup_read_holding_register(1000, 1);
-    cmd_temp->on_data([this](const std::vector<uint8_t> &data) {
-      uint16_t temp_raw = (data[0] << 8) | data[1];
-      this->current_temperature = temp_raw / 10.0f;
-    });
-    this->modbus_->queue_command(cmd_temp);
+    this->modbus_->queue_custom_command(
+      1, // unit id
+      modbus_controller::ModbusFunctionCode::READ_HOLDING_REGISTERS,
+      1000, // room temp register
+      1, // quantity
+      [this](const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          uint16_t temp_raw = (data[0] << 8) | data[1];
+          this->current_temperature = temp_raw / 10.0f;
+        }
+      },
+      [this](modbus_controller::ModbusCommandItem *item, modbus_controller::ModbusError err) {
+        ESP_LOGW(TAG, "Failed to read room temperature: %d", err);
+      }
+    );
 
     // Read setpoint (REG_SETPOINT = 1001)
-    auto *cmd_setpoint = new modbus_controller::ModbusCommandItem();
-    cmd_setpoint->setup_read_holding_register(1001, 1);
-    cmd_setpoint->on_data([this](const std::vector<uint8_t> &data) {
-      uint16_t setpoint_raw = (data[0] << 8) | data[1];
-      this->target_temperature = setpoint_raw / 10.0f;
-    });
-    this->modbus_->queue_command(cmd_setpoint);
+    this->modbus_->queue_custom_command(
+      1, // unit id
+      modbus_controller::ModbusFunctionCode::READ_HOLDING_REGISTERS,
+      1001, // setpoint register
+      1, // quantity
+      [this](const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          uint16_t setpoint_raw = (data[0] << 8) | data[1];
+          this->target_temperature = setpoint_raw / 10.0f;
+        }
+      },
+      [this](modbus_controller::ModbusCommandItem *item, modbus_controller::ModbusError err) {
+        ESP_LOGW(TAG, "Failed to read setpoint: %d", err);
+      }
+    );
 
     // Read active fan mode from REG_USERMODE_MODE (1162)
-    auto *cmd_fan = new modbus_controller::ModbusCommandItem();
-    cmd_fan->setup_read_holding_register(1162, 1);
-    cmd_fan->on_data([this](const std::vector<uint8_t> &data) {
-      uint16_t fanmode_raw = (data[0] << 8) | data[1];
-      this->fan_mode = reg_to_fan_mode(fanmode_raw);
-    });
-    this->modbus_->queue_command(cmd_fan);
+    this->modbus_->queue_custom_command(
+      1, // unit id
+      modbus_controller::ModbusFunctionCode::READ_HOLDING_REGISTERS,
+      1162, // fan mode register
+      1, // quantity
+      [this](const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          uint16_t fanmode_raw = (data[0] << 8) | data[1];
+          this->custom_fan_mode = reg_to_fan_mode_string(fanmode_raw);
+        }
+      },
+      [this](modbus_controller::ModbusCommandItem *item, modbus_controller::ModbusError err) {
+        ESP_LOGW(TAG, "Failed to read fan mode: %d", err);
+      }
+    );
   }
   this->publish_state();
 }
