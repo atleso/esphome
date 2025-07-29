@@ -63,16 +63,26 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value()) {
     float temp = *call.get_target_temperature();
     ESP_LOGI(TAG, "Setting target temperature: %.1f", temp);
-    modbus_controller::ModbusCommandItem cmd(
-      modbus_controller::ModbusFunctionCode::WRITE_SINGLE_REGISTER,
-      1001,
-      {static_cast<uint16_t>(temp * 10)},
-      [this, temp](const std::vector<uint8_t> &data) {
+    
+    // Use the async write method
+    this->modbus_->send_command_async([this, temp](uint8_t function_code, uint16_t start_address, 
+                                                   const std::vector<uint8_t> &data, 
+                                                   const std::function<void(const std::vector<uint8_t>&)> &on_data) {
+      // Prepare write single register command
+      std::vector<uint8_t> payload;
+      uint16_t reg_addr = 1001;
+      uint16_t reg_value = static_cast<uint16_t>(temp * 10);
+      
+      payload.push_back((reg_addr >> 8) & 0xFF);  // High byte of register address
+      payload.push_back(reg_addr & 0xFF);         // Low byte of register address
+      payload.push_back((reg_value >> 8) & 0xFF); // High byte of value
+      payload.push_back(reg_value & 0xFF);        // Low byte of value
+      
+      return this->modbus_->send_raw_command(0x06, payload, [this, temp](const std::vector<uint8_t> &response) {
         this->target_temperature = temp;
-        ESP_LOGD(TAG, "Setpoint written, confirmed: %.1f", temp);
-      }
-    );
-    this->modbus_->queue_command(cmd);
+        ESP_LOGD(TAG, "Setpoint written successfully: %.1f", temp);
+      });
+    });
   }
 
   // Write custom fan mode to Modbus if requested
@@ -81,15 +91,24 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
     ESP_LOGI(TAG, "Requested custom fan mode change to: %s", mode.c_str());
     int reg_val = fan_mode_to_reg(mode);
     if (reg_val != 8) { // 8 = COOKERHOOD, read-only
-      modbus_controller::ModbusCommandItem cmd(
-        modbus_controller::ModbusFunctionCode::WRITE_SINGLE_REGISTER,
-        1162,
-        {static_cast<uint16_t>(reg_val)},
-        [this, reg_val](const std::vector<uint8_t> &data) {
-          ESP_LOGD(TAG, "Fan mode written, confirmed: %d", reg_val);
-        }
-      );
-      this->modbus_->queue_command(cmd);
+      
+      this->modbus_->send_command_async([this, reg_val](uint8_t function_code, uint16_t start_address, 
+                                                        const std::vector<uint8_t> &data, 
+                                                        const std::function<void(const std::vector<uint8_t>&)> &on_data) {
+        // Prepare write single register command
+        std::vector<uint8_t> payload;
+        uint16_t reg_addr = 1162;
+        uint16_t reg_value = static_cast<uint16_t>(reg_val);
+        
+        payload.push_back((reg_addr >> 8) & 0xFF);  // High byte of register address
+        payload.push_back(reg_addr & 0xFF);         // Low byte of register address
+        payload.push_back((reg_value >> 8) & 0xFF); // High byte of value
+        payload.push_back(reg_value & 0xFF);        // Low byte of value
+        
+        return this->modbus_->send_raw_command(0x06, payload, [this, reg_val](const std::vector<uint8_t> &response) {
+          ESP_LOGD(TAG, "Fan mode written successfully: %d", reg_val);
+        });
+      });
     }
   }
 
@@ -98,49 +117,77 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
 
 void SaveVTRClimate::update() {
   if (this->modbus_ != nullptr) {
-    // Read room temperature (REG_ROOM_TEMP = 1000)
-    modbus_controller::ModbusCommandItem cmd_temp(
-      modbus_controller::ModbusFunctionCode::READ_HOLDING_REGISTERS,
-      1000,
-      {1},
-      [this](const std::vector<uint8_t> &data) {
-        if (data.size() >= 2) {
-          uint16_t temp_raw = (data[0] << 8) | data[1];
+    // Read room temperature (register 1000) asynchronously
+    this->modbus_->send_command_async([this](uint8_t function_code, uint16_t start_address, 
+                                             const std::vector<uint8_t> &data, 
+                                             const std::function<void(const std::vector<uint8_t>&)> &on_data) {
+      std::vector<uint8_t> payload;
+      uint16_t reg_addr = 1000;
+      uint16_t reg_count = 1;
+      
+      payload.push_back((reg_addr >> 8) & 0xFF);   // High byte of register address
+      payload.push_back(reg_addr & 0xFF);          // Low byte of register address
+      payload.push_back((reg_count >> 8) & 0xFF);  // High byte of register count
+      payload.push_back(reg_count & 0xFF);         // Low byte of register count
+      
+      return this->modbus_->send_raw_command(0x03, payload, [this](const std::vector<uint8_t> &response) {
+        if (response.size() >= 3 && response[0] >= 2) {  // Check if we have at least 2 data bytes
+          uint16_t temp_raw = (response[1] << 8) | response[2];
           this->current_temperature = temp_raw / 10.0f;
+          ESP_LOGD(TAG, "Read room temperature: %.1f", this->current_temperature);
         }
-      }
-    );
-    this->modbus_->queue_command(cmd_temp);
-
-    // Read setpoint (REG_SETPOINT = 1001)
-    modbus_controller::ModbusCommandItem cmd_setpoint(
-      modbus_controller::ModbusFunctionCode::READ_HOLDING_REGISTERS,
-      1001,
-      {1},
-      [this](const std::vector<uint8_t> &data) {
-        if (data.size() >= 2) {
-          uint16_t setpoint_raw = (data[0] << 8) | data[1];
+      });
+    });
+    
+    // Read setpoint (register 1001) asynchronously
+    this->modbus_->send_command_async([this](uint8_t function_code, uint16_t start_address, 
+                                             const std::vector<uint8_t> &data, 
+                                             const std::function<void(const std::vector<uint8_t>&)> &on_data) {
+      std::vector<uint8_t> payload;
+      uint16_t reg_addr = 1001;
+      uint16_t reg_count = 1;
+      
+      payload.push_back((reg_addr >> 8) & 0xFF);   // High byte of register address
+      payload.push_back(reg_addr & 0xFF);          // Low byte of register address
+      payload.push_back((reg_count >> 8) & 0xFF);  // High byte of register count
+      payload.push_back(reg_count & 0xFF);         // Low byte of register count
+      
+      return this->modbus_->send_raw_command(0x03, payload, [this](const std::vector<uint8_t> &response) {
+        if (response.size() >= 3 && response[0] >= 2) {  // Check if we have at least 2 data bytes
+          uint16_t setpoint_raw = (response[1] << 8) | response[2];
           this->target_temperature = setpoint_raw / 10.0f;
+          ESP_LOGD(TAG, "Read setpoint: %.1f", this->target_temperature);
         }
-      }
-    );
-    this->modbus_->queue_command(cmd_setpoint);
-
-    // Read active fan mode from REG_USERMODE_MODE (1162)
-    modbus_controller::ModbusCommandItem cmd_fan(
-      modbus_controller::ModbusFunctionCode::READ_HOLDING_REGISTERS,
-      1162,
-      {1},
-      [this](const std::vector<uint8_t> &data) {
-        if (data.size() >= 2) {
-          uint16_t fanmode_raw = (data[0] << 8) | data[1];
+      });
+    });
+    
+    // Read fan mode (register 1162) asynchronously
+    this->modbus_->send_command_async([this](uint8_t function_code, uint16_t start_address, 
+                                             const std::vector<uint8_t> &data, 
+                                             const std::function<void(const std::vector<uint8_t>&)> &on_data) {
+      std::vector<uint8_t> payload;
+      uint16_t reg_addr = 1162;
+      uint16_t reg_count = 1;
+      
+      payload.push_back((reg_addr >> 8) & 0xFF);   // High byte of register address
+      payload.push_back(reg_addr & 0xFF);          // Low byte of register address
+      payload.push_back((reg_count >> 8) & 0xFF);  // High byte of register count
+      payload.push_back(reg_count & 0xFF);         // Low byte of register count
+      
+      return this->modbus_->send_raw_command(0x03, payload, [this](const std::vector<uint8_t> &response) {
+        if (response.size() >= 3 && response[0] >= 2) {  // Check if we have at least 2 data bytes
+          uint16_t fanmode_raw = (response[1] << 8) | response[2];
           this->custom_fan_mode = reg_to_fan_mode_string(fanmode_raw);
+          ESP_LOGD(TAG, "Read fan mode: %s (%d)", this->custom_fan_mode.c_str(), fanmode_raw);
         }
-      }
-    );
-    this->modbus_->queue_command(cmd_fan);
+      });
+    });
   }
-  this->publish_state();
+  
+  // Publish state after a short delay to allow async operations to complete
+  this->set_timeout(100, [this]() {
+    this->publish_state();
+  });
 }
 
 }  // namespace save_vtr
