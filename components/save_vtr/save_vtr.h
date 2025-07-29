@@ -14,6 +14,7 @@ class SaveVTRClimate : public climate::Climate, public PollingComponent {
   void update() override;
   void control(const climate::ClimateCall &call) override;
   climate::ClimateTraits traits() override;
+  void dump_config() override;
 
   void set_room_temp_sensor(sensor::Sensor *sensor) { this->room_temp_sensor_ = sensor; }
   void set_setpoint_sensor(sensor::Sensor *sensor) { this->setpoint_sensor_ = sensor; }

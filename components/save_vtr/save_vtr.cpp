@@ -7,6 +7,26 @@ namespace save_vtr {
 
 static const char *const TAG = "save_vtr.climate";
 
+void SaveVTRClimate::dump_config() {
+  ESP_LOGCONFIG(TAG, "SaveVTRClimate:");
+  LOG_CLIMATE("  ", "SaveVTRClimate", this);
+  if (this->room_temp_sensor_ != nullptr) {
+    ESP_LOGCONFIG(TAG, "  Room temperature sensor attached");
+  } else {
+    ESP_LOGCONFIG(TAG, "  No room temperature sensor");
+  }
+  if (this->setpoint_sensor_ != nullptr) {
+    ESP_LOGCONFIG(TAG, "  Setpoint sensor attached");
+  } else {
+    ESP_LOGCONFIG(TAG, "  No setpoint sensor");
+  }
+  if (this->setpoint_number_ != nullptr) {
+    ESP_LOGCONFIG(TAG, "  Setpoint number attached");
+  } else {
+    ESP_LOGCONFIG(TAG, "  No setpoint number");
+  }
+}
+
 climate::ClimateTraits SaveVTRClimate::traits() {
   auto traits = climate::ClimateTraits();
   traits.set_supports_current_temperature(true);
