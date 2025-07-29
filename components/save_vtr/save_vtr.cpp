@@ -1,12 +1,13 @@
-void SaveVTRClimate::set_modbus(modbus_controller::ModbusController *modbus) {
-  this->modbus_ = modbus;
-}
-// save_vtr.cpp
+
 #include "save_vtr.h"
 #include "esphome/core/log.h"
 
 namespace esphome {
 namespace save_vtr {
+
+void SaveVTRClimate::set_modbus(modbus_controller::ModbusController *modbus) {
+  this->modbus_ = modbus;
+}
 
 static const char *const TAG = "save_vtr.climate";
 
