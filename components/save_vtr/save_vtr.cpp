@@ -17,9 +17,6 @@ void SaveVTRClimate::dump_config() {
   ESP_LOGCONFIG(TAG, "  Using direct Modbus for temperature, setpoint, and fan mode");
 }
 
-
-
-#include <map>
 using climate::ClimateFanMode;
 
 // Map register value to ClimateFanMode (custom modes)
