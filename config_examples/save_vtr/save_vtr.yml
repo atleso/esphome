@@ -1,0 +1,40 @@
+uart:
+  id: uart1
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+  stop_bits: 1
+  parity: NONE
+
+modbus:
+  id: modbus1
+  uart_id: uart1
+
+modbus_controller:
+  - id: save_modbus
+    modbus_id: modbus1
+    address: 1
+    command_throttle: 200ms
+    setup_priority: -10
+
+binary_sensor:
+  - platform: modbus_controller
+    modbus_controller_id: save_modbus
+    name: "VTR Filter Alarm"
+    address: 7007
+    register_type: read
+    device_class: problem
+    
+  - platform: modbus_controller
+    modbus_controller_id: save_modbus
+    name: "VTR Output Alarm"
+    address: 14003
+    register_type: read
+    device_class: problem
+
+
+climate:
+  - platform: save_vtr
+    name: "SAVE Climate"
+    modbus_id: save_modbus
+    update_interval: 30s
