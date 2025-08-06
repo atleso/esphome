@@ -163,7 +163,7 @@ void SaveVTRClimate::update() {
           // Convert to unsigned 16-bit integer
           uint16_t saf_raw = (data[0] << 8) | data[1];
           this->saf_percent_ = static_cast<float>(saf_raw);
-          this->saf_volume_ = static_cast<float>(saf_raw);  // Direct value, no scaling
+          this->saf_volume_ = (static_cast<float>(saf_raw) / 100.0f) * 300.0f;  // Scale from percentage to m³/h
           ESP_LOGD(TAG, "Read SAF: %.0f%% / %.1f m³/h (raw: %u)", this->saf_percent_, this->saf_volume_, saf_raw);
         }
       }
