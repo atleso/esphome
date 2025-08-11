@@ -6,11 +6,10 @@ namespace esphome {
 namespace save_vtr {
 
 // Modbus register addresses
-static constexpr uint16_t REG_SETPOINT_WRITE = 1000;    // Target temperature write (holding)
 static constexpr uint16_t REG_FAN_MODE = 1160;          // Fan mode read (read input register)
 static constexpr uint16_t REG_FAN_MODE_REQ = 1161;          // Fan mode request (holding)
 static constexpr uint16_t REG_ROOM_TEMP = 2001;         // Room temperature read (holding)
-static constexpr uint16_t REG_SETPOINT_READ = 2000;     // Target temperature read (read)
+static constexpr uint16_t REG_SETPOINT = 2000;     // Target temperature read/write (holding)
 static constexpr uint16_t REG_HEAT_DEMAND = 2148;       // Heat demand percentage read (read)
 static constexpr uint16_t REG_OUTDOOR_TEMP = 12101;     // Outdoor air temperature (holding)
 static constexpr uint16_t REG_SUPPLY_TEMP = 12102;      // Supply air temperature (holding)
@@ -126,7 +125,7 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
     ESP_LOGI(TAG, "Setting target temperature: %.1f", temp);
     
     auto cmd = modbus_controller::ModbusCommandItem::create_write_single_command(
-      this->modbus_, REG_SETPOINT_WRITE, static_cast<uint16_t>(temp * 10)
+      this->modbus_, REG_SETPOINT, static_cast<uint16_t>(temp * 10)
     );
     this->modbus_->queue_command(cmd);
     this->target_temperature = temp;
@@ -155,8 +154,8 @@ void SaveVTRClimate::update() {
                                   REG_ROOM_TEMP, &this->current_temperature, "room temperature");
     
     // Read setpoint - signed 16-bit with /10.0 scaling
-    create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::READ, 
-                                  REG_SETPOINT_READ, &this->target_temperature, "setpoint");
+    create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
+                                  REG_SETPOINT, &this->target_temperature, "setpoint");
     
     // Read outdoor air temperature - signed 16-bit with /10.0 scaling
     create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
