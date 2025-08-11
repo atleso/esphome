@@ -7,7 +7,8 @@ namespace save_vtr {
 
 // Modbus register addresses
 static constexpr uint16_t REG_SETPOINT_WRITE = 1000;    // Target temperature write (holding)
-static constexpr uint16_t REG_FAN_MODE = 1162;          // Fan mode read/write (holding)
+static constexpr uint16_t REG_FAN_MODE = 1160;          // Fan mode read (read input register)
+static constexpr uint16_t REG_FAN_MODE_REQ = 1161;          // Fan mode request (holding)
 static constexpr uint16_t REG_ROOM_TEMP = 2001;         // Room temperature read (holding)
 static constexpr uint16_t REG_SETPOINT_READ = 2000;     // Target temperature read (read)
 static constexpr uint16_t REG_HEAT_DEMAND = 2148;       // Heat demand percentage read (read)
@@ -138,7 +139,7 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
     int reg_val = fan_mode_to_reg(mode);
     if (reg_val != 8) { // 8 = COOKERHOOD, read-only
       auto cmd = modbus_controller::ModbusCommandItem::create_write_single_command(
-        this->modbus_, REG_FAN_MODE, static_cast<uint16_t>(reg_val)
+        this->modbus_, REG_FAN_MODE_REQ, static_cast<uint16_t>(reg_val)
       );
       this->modbus_->queue_command(cmd);
     }
@@ -207,7 +208,7 @@ void SaveVTRClimate::update() {
     
     // Read fan mode - unsigned 16-bit enum value
     auto cmd_fan = modbus_controller::ModbusCommandItem::create_read_command(
-      this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, REG_FAN_MODE, 1,
+      this->modbus_, modbus_controller::ModbusRegisterType::READ, REG_FAN_MODE, 1,
       [this](modbus_controller::ModbusRegisterType, uint16_t, const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
           uint16_t fanmode_raw = (data[0] << 8) | data[1];
