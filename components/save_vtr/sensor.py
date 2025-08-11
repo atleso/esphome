@@ -46,5 +46,4 @@ async def to_code(config):
         if name in config:
             sens = await sensor.new_sensor(config[name])
             cg.add(getattr(paren, f"set_{name}_sensor")(sens))
-
 sensor_core.register_sensor("save_vtr", CONFIG_SCHEMA, to_code)
