@@ -260,5 +260,17 @@ void SaveVTRClimate::update() {
   });
 }
 
+void SaveVTRClimate::dump_attributes(JsonObject &root) {
+  climate::Climate::dump_attributes(root);
+  root["saf_percent"] = this->saf_percent_;
+  root["saf_volume"] = this->saf_volume_;
+  root["eaf_percent"] = this->eaf_percent_;
+  root["eaf_volume"] = this->eaf_volume_;
+  root["heat_demand_percent"] = this->heat_demand_percent_;
+  root["outdoor_air_temp"] = this->outdoor_air_temp_;
+  root["supply_air_temp"] = this->supply_air_temp_;
+  root["extract_air_temp"] = this->extract_air_temp_;
+}
+
 }  // namespace save_vtr
 }  // namespace esphome
