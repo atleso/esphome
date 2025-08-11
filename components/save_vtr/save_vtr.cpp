@@ -261,7 +261,6 @@ void SaveVTRClimate::update() {
 }
 
 void SaveVTRClimate::dump_attributes(JsonObject &root) {
-  climate::Climate::dump_attributes(root);
   root["saf_percent"] = this->saf_percent_;
   root["saf_volume"] = this->saf_volume_;
   root["eaf_percent"] = this->eaf_percent_;

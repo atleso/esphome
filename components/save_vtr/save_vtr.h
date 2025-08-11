@@ -16,7 +16,7 @@ class SaveVTRClimate : public climate::Climate, public PollingComponent {
   void set_modbus(modbus_controller::ModbusController *modbus);
   // Ensure we default to HEAT and restore previous state if available
   void setup() override;
-  void dump_attributes(JsonObject &root) override;
+  void dump_attributes(JsonObject &root);
 
  protected:
   modbus_controller::ModbusController *modbus_{nullptr};
