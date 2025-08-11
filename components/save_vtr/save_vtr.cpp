@@ -178,8 +178,8 @@ void SaveVTRClimate::update() {
       [this](modbus_controller::ModbusRegisterType, uint16_t, const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
           uint16_t saf_raw = (data[0] << 8) | data[1];
-          this->saf_volume_ = static_cast<float>(saf_raw);
-          this->saf_percent_ = static_cast<float>(saf_raw);  // Same value for both
+          this->saf_volume_ = static_cast<float>(saf_raw) * 3.0f;
+          this->saf_percent_ = static_cast<float>(saf_raw); 
           ESP_LOGD(TAG, "Read supply air flow: %.1f m³/h (raw: %u)", this->saf_volume_, saf_raw);
         } else {
           ESP_LOGE(TAG, "Insufficient data for supply air flow: got %d bytes, expected 2", data.size());
@@ -194,8 +194,8 @@ void SaveVTRClimate::update() {
       [this](modbus_controller::ModbusRegisterType, uint16_t, const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
           uint16_t eaf_raw = (data[0] << 8) | data[1];
-          this->eaf_volume_ = static_cast<float>(eaf_raw);
-          this->eaf_percent_ = static_cast<float>(eaf_raw);  // Same value for both
+          this->eaf_volume_ = static_cast<float>(eaf_raw) ) * 3.0f;
+          this->eaf_percent_ = static_cast<float>(eaf_raw); 
           ESP_LOGD(TAG, "Read extract air flow: %.1f m³/h (raw: %u)", this->eaf_volume_, eaf_raw);
         } else {
           ESP_LOGE(TAG, "Insufficient data for extract air flow: got %d bytes, expected 2", data.size());
