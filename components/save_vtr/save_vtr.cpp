@@ -6,16 +6,16 @@ namespace esphome {
 namespace save_vtr {
 
 // Modbus register addresses
-static constexpr uint16_t REG_SETPOINT_WRITE = 1001;    // Target temperature write (holding)
+static constexpr uint16_t REG_SETPOINT_WRITE = 1000;    // Target temperature write (holding)
 static constexpr uint16_t REG_FAN_MODE = 1162;          // Fan mode read/write (holding)
 static constexpr uint16_t REG_ROOM_TEMP = 2001;         // Room temperature read (holding)
-static constexpr uint16_t REG_SETPOINT_READ = 2054;     // Target temperature read (read)
-static constexpr uint16_t REG_HEAT_DEMAND = 2055;       // Heat demand percentage read (read)
-static constexpr uint16_t REG_OUTDOOR_TEMP = 12102;     // Outdoor air temperature (holding)
-static constexpr uint16_t REG_SUPPLY_TEMP = 12103;      // Supply air temperature (holding)
-static constexpr uint16_t REG_EXTRACT_TEMP = 12105;     // Extract air temperature (holding)
-static constexpr uint16_t REG_SUPPLY_AIRFLOW = 14001;   // Supply air flow volume (read)
-static constexpr uint16_t REG_EXTRACT_AIRFLOW = 14002;  // Extract air flow volume (read)
+static constexpr uint16_t REG_SETPOINT_READ = 2000;     // Target temperature read (read)
+static constexpr uint16_t REG_HEAT_DEMAND = 2148;       // Heat demand percentage read (read)
+static constexpr uint16_t REG_OUTDOOR_TEMP = 12101;     // Outdoor air temperature (holding)
+static constexpr uint16_t REG_SUPPLY_TEMP = 12102;      // Supply air temperature (holding)
+static constexpr uint16_t REG_EXTRACT_TEMP = 12543;     // Extract air temperature (holding)
+static constexpr uint16_t REG_SUPPLY_AIRFLOW = 14000;   // Supply air flow volume (read)
+static constexpr uint16_t REG_EXTRACT_AIRFLOW = 14001;  // Extract air flow volume (read)
 
 void SaveVTRClimate::set_modbus(modbus_controller::ModbusController *modbus) {
   this->modbus_ = modbus;
