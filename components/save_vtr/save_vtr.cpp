@@ -108,7 +108,8 @@ static int fan_mode_to_reg(const std::string &mode) {
 climate::ClimateTraits SaveVTRClimate::traits() {
   auto traits = climate::ClimateTraits();
   traits.set_supports_current_temperature(true);
-  traits.set_supported_modes({climate::CLIMATE_MODE_HEAT, climate::CLIMATE_MODE_OFF});
+  //traits.set_supported_modes({climate::CLIMATE_MODE_HEAT, climate::CLIMATE_MODE_OFF});
+  traits.set_supported_modes({climate::CLIMATE_MODE_HEAT});
   traits.set_supported_custom_fan_modes({
     "AUTO", "MANUAL", "CROWDED", "REFRESH", "FIREPLACE", "AWAY", "HOLIDAY", "COOKERHOOD"
   });
@@ -150,7 +151,7 @@ void SaveVTRClimate::update() {
   if (this->modbus_ != nullptr) {
     // Read room temperature - signed 16-bit with /10.0 scaling
     create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
-                                  REG_ROOM_TEMP, &this->current_temperature, "room temperature");
+                                  REG_SUPPLY_TEMP, &this->current_temperature, "room temperature");
     
     // Read setpoint - signed 16-bit with /10.0 scaling
     create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
