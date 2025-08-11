@@ -178,65 +178,57 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
   this->publish_state();
 }
 
+
 void SaveVTRClimate::update() {
   if (this->modbus_ != nullptr) {
-
-
-    // Read setpoint - signed 16-bit with /10.0 scaling
+    // ...existing code for modbus reads...
     create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
                                   REG_SETPOINT, &this->target_temperature, "setpoint");
-    
-    // Read outdoor air temperature - signed 16-bit with /10.0 scaling
     create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
                                   REG_OUTDOOR_TEMP, &this->outdoor_air_temp_, "outdoor air temperature");
-    
-    // Read supply air temperature - signed 16-bit with /10.0 scaling
     create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING,
                                   REG_SUPPLY_TEMP, &this->supply_air_temp_, "supply air temperature");
-
-    this->current_temperature = this->supply_air_temp_; // Mirror current temperature from supply air temp                              
-
-    // Read extract air temperature - signed 16-bit with /10.0 scaling
+    this->current_temperature = this->supply_air_temp_;
     create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
                                   REG_EXTRACT_TEMP, &this->extract_air_temp_, "extract air temperature");
-    
-    // Read heat demand - unsigned 16-bit percentage
     create_uint16_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::READ,
                              REG_HEAT_DEMAND, &this->heat_demand_percent_, "heat demand", "%");
-    
-    // Read supply air flow volume - unsigned 16-bit, direct value in m³/h
     auto cmd_saf = modbus_controller::ModbusCommandItem::create_read_command(
       this->modbus_, modbus_controller::ModbusRegisterType::READ, REG_SUPPLY_AIRFLOW, 1,
       [this](modbus_controller::ModbusRegisterType, uint16_t, const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
           uint16_t saf_raw = (data[0] << 8) | data[1];
           this->saf_volume_ = static_cast<float>(saf_raw) * 3.0f;
-          this->saf_percent_ = static_cast<float>(saf_raw); 
+          this->saf_percent_ = static_cast<float>(saf_raw);
           ESP_LOGD(TAG, "Read supply air flow: %.1f m³/h (raw: %u)", this->saf_volume_, saf_raw);
+          if (this->saf_volume_sensor_ != nullptr)
+            this->saf_volume_sensor_->publish_state(this->saf_volume_);
+          if (this->saf_percent_sensor_ != nullptr)
+            this->saf_percent_sensor_->publish_state(this->saf_percent_);
         } else {
           ESP_LOGE(TAG, "Insufficient data for supply air flow: got %d bytes, expected 2", data.size());
         }
       }
     );
     this->modbus_->queue_command(cmd_saf);
-    
-    // Read extract air flow volume - unsigned 16-bit, direct value in m³/h
     auto cmd_eaf = modbus_controller::ModbusCommandItem::create_read_command(
       this->modbus_, modbus_controller::ModbusRegisterType::READ, REG_EXTRACT_AIRFLOW, 1,
       [this](modbus_controller::ModbusRegisterType, uint16_t, const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
           uint16_t eaf_raw = (data[0] << 8) | data[1];
           this->eaf_volume_ = static_cast<float>(eaf_raw) * 3.0f;
-          this->eaf_percent_ = static_cast<float>(eaf_raw); 
+          this->eaf_percent_ = static_cast<float>(eaf_raw);
           ESP_LOGD(TAG, "Read extract air flow: %.1f m³/h (raw: %u)", this->eaf_volume_, eaf_raw);
+          if (this->eaf_volume_sensor_ != nullptr)
+            this->eaf_volume_sensor_->publish_state(this->eaf_volume_);
+          if (this->eaf_percent_sensor_ != nullptr)
+            this->eaf_percent_sensor_->publish_state(this->eaf_percent_);
         } else {
           ESP_LOGE(TAG, "Insufficient data for extract air flow: got %d bytes, expected 2", data.size());
         }
       }
     );
     this->modbus_->queue_command(cmd_eaf);
-    
-    // Read fan mode - unsigned 16-bit enum value
     auto cmd_fan = modbus_controller::ModbusCommandItem::create_read_command(
       this->modbus_, modbus_controller::ModbusRegisterType::READ, REG_FAN_MODE, 1,
       [this](modbus_controller::ModbusRegisterType, uint16_t, const std::vector<uint8_t> &data) {
@@ -251,22 +243,17 @@ void SaveVTRClimate::update() {
     );
     this->modbus_->queue_command(cmd_fan);
   }
-  
-  // Publish state after a short delay to allow async operations to complete
   this->set_timeout(100, [this]() {
-    // Mirror current temperature from supply air temperature
     this->current_temperature = this->supply_air_temp_;
-
-    // Expose custom attributes to Home Assistant
-    this->add_attribute("saf_percent", this->saf_percent_);
-    this->add_attribute("saf_volume", this->saf_volume_);
-    this->add_attribute("eaf_percent", this->eaf_percent_);
-    this->add_attribute("eaf_volume", this->eaf_volume_);
-    this->add_attribute("heat_demand_percent", this->heat_demand_percent_);
-    this->add_attribute("outdoor_air_temp", this->outdoor_air_temp_);
-    this->add_attribute("supply_air_temp", this->supply_air_temp_);
-    this->add_attribute("extract_air_temp", this->extract_air_temp_);
-
+    // Publish sensors for other values
+    if (this->heat_demand_sensor_ != nullptr)
+      this->heat_demand_sensor_->publish_state(this->heat_demand_percent_);
+    if (this->outdoor_air_temp_sensor_ != nullptr)
+      this->outdoor_air_temp_sensor_->publish_state(this->outdoor_air_temp_);
+    if (this->supply_air_temp_sensor_ != nullptr)
+      this->supply_air_temp_sensor_->publish_state(this->supply_air_temp_);
+    if (this->extract_air_temp_sensor_ != nullptr)
+      this->extract_air_temp_sensor_->publish_state(this->extract_air_temp_);
     this->publish_state();
   });
 }

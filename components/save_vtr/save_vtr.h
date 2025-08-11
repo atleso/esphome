@@ -14,9 +14,17 @@ class SaveVTRClimate : public climate::Climate, public PollingComponent {
   climate::ClimateTraits traits() override;
   void dump_config() override;
   void set_modbus(modbus_controller::ModbusController *modbus);
-  // Ensure we default to HEAT and restore previous state if available
   void setup() override;
-  void dump_attributes(JsonObject &root);
+
+  // Sensor setter methods
+  void set_saf_percent_sensor(esphome::sensor::Sensor *sensor) { saf_percent_sensor_ = sensor; }
+  void set_saf_volume_sensor(esphome::sensor::Sensor *sensor) { saf_volume_sensor_ = sensor; }
+  void set_eaf_percent_sensor(esphome::sensor::Sensor *sensor) { eaf_percent_sensor_ = sensor; }
+  void set_eaf_volume_sensor(esphome::sensor::Sensor *sensor) { eaf_volume_sensor_ = sensor; }
+  void set_heat_demand_sensor(esphome::sensor::Sensor *sensor) { heat_demand_sensor_ = sensor; }
+  void set_outdoor_air_temp_sensor(esphome::sensor::Sensor *sensor) { outdoor_air_temp_sensor_ = sensor; }
+  void set_supply_air_temp_sensor(esphome::sensor::Sensor *sensor) { supply_air_temp_sensor_ = sensor; }
+  void set_extract_air_temp_sensor(esphome::sensor::Sensor *sensor) { extract_air_temp_sensor_ = sensor; }
 
  protected:
   modbus_controller::ModbusController *modbus_{nullptr};
@@ -28,6 +36,16 @@ class SaveVTRClimate : public climate::Climate, public PollingComponent {
   float outdoor_air_temp_{0.0f};        // Outdoor air temperature (°C, scaled /10)
   float supply_air_temp_{0.0f};         // Supply air temperature (°C, scaled /10)
   float extract_air_temp_{0.0f};        // Extract air temperature (°C, scaled /10)
+
+  // Sensor pointers
+  esphome::sensor::Sensor *saf_percent_sensor_{nullptr};
+  esphome::sensor::Sensor *saf_volume_sensor_{nullptr};
+  esphome::sensor::Sensor *eaf_percent_sensor_{nullptr};
+  esphome::sensor::Sensor *eaf_volume_sensor_{nullptr};
+  esphome::sensor::Sensor *heat_demand_sensor_{nullptr};
+  esphome::sensor::Sensor *outdoor_air_temp_sensor_{nullptr};
+  esphome::sensor::Sensor *supply_air_temp_sensor_{nullptr};
+  esphome::sensor::Sensor *extract_air_temp_sensor_{nullptr};
 };
 
 }  // namespace save_vtr
