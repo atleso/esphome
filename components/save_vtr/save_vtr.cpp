@@ -108,6 +108,9 @@ static int fan_mode_to_reg(const std::string &mode) {
 climate::ClimateTraits SaveVTRClimate::traits() {
   auto traits = climate::ClimateTraits();
   traits.set_supports_current_temperature(true);
+  traits.set_visual_temperature_step(1.0f);
+  traits.set_visual_min_temperature(12.0f); 
+  traits.set_visual_max_temperature(30.0f);
   //traits.set_supported_modes({climate::CLIMATE_MODE_HEAT, climate::CLIMATE_MODE_OFF});
   traits.set_supported_modes({climate::CLIMATE_MODE_HEAT});
   traits.set_supported_custom_fan_modes({
