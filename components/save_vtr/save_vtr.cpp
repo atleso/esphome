@@ -256,20 +256,21 @@ void SaveVTRClimate::update() {
   this->set_timeout(100, [this]() {
     // Mirror current temperature from supply air temperature
     this->current_temperature = this->supply_air_temp_;
+
+    // Expose custom attributes to Home Assistant
+    this->add_attribute("saf_percent", this->saf_percent_);
+    this->add_attribute("saf_volume", this->saf_volume_);
+    this->add_attribute("eaf_percent", this->eaf_percent_);
+    this->add_attribute("eaf_volume", this->eaf_volume_);
+    this->add_attribute("heat_demand_percent", this->heat_demand_percent_);
+    this->add_attribute("outdoor_air_temp", this->outdoor_air_temp_);
+    this->add_attribute("supply_air_temp", this->supply_air_temp_);
+    this->add_attribute("extract_air_temp", this->extract_air_temp_);
+
     this->publish_state();
   });
 }
 
-void SaveVTRClimate::dump_attributes(JsonObject &root) {
-  root["saf_percent"] = this->saf_percent_;
-  root["saf_volume"] = this->saf_volume_;
-  root["eaf_percent"] = this->eaf_percent_;
-  root["eaf_volume"] = this->eaf_volume_;
-  root["heat_demand_percent"] = this->heat_demand_percent_;
-  root["outdoor_air_temp"] = this->outdoor_air_temp_;
-  root["supply_air_temp"] = this->supply_air_temp_;
-  root["extract_air_temp"] = this->extract_air_temp_;
-}
 
 }  // namespace save_vtr
 }  // namespace esphome
