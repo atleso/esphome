@@ -24,11 +24,11 @@ void SaveVTRClimate::set_modbus(modbus_controller::ModbusController *modbus) {
 void SaveVTRClimate::setup() {
   auto restore = this->restore_state_();
   if (restore.has_value()) {
-    auto m = restore->get_mode().value_or(climate::CLIMATE_MODE_HEAT);
+    auto m = restore->mode.value_or(climate::CLIMATE_MODE_HEAT);
     if (m == climate::CLIMATE_MODE_OFF) m = climate::CLIMATE_MODE_HEAT;
     this->mode = m;
-    if (restore->get_target_temperature().has_value())
-      this->target_temperature = *restore->get_target_temperature();
+    if (restore->target_temperature.has_value())
+      this->target_temperature = *restore->target_temperature;
   } else {
     this->mode = climate::CLIMATE_MODE_HEAT;
   }
