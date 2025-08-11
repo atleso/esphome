@@ -81,7 +81,7 @@ void SaveVTRClimate::dump_config() {
 // Map register value to custom fan mode string
 static std::string reg_to_fan_mode_string(int reg) {
   switch (reg) {
-    case 0: return "AUTO";
+    case 0: return "AUTO-VENT";
     case 1: return "MANUAL";
     case 2: return "CROWDED";
     case 3: return "REFRESH";
@@ -89,13 +89,13 @@ static std::string reg_to_fan_mode_string(int reg) {
     case 5: return "AWAY";
     case 6: return "HOLIDAY";
     case 7: return "COOKERHOOD";
-    default: return "AUTO";
+    default: return "AUTO-VENT";
   }
 }
 
 // Map custom fan mode string to register value
 static int fan_mode_to_reg(const std::string &mode) {
-  if (mode == "AUTO") return 1;
+  if (mode == "AUTO-VENT") return 1;
   if (mode == "MANUAL") return 2;
   if (mode == "CROWDED") return 3;
   if (mode == "REFRESH") return 4;
@@ -111,7 +111,7 @@ climate::ClimateTraits SaveVTRClimate::traits() {
   //traits.set_supported_modes({climate::CLIMATE_MODE_HEAT, climate::CLIMATE_MODE_OFF});
   traits.set_supported_modes({climate::CLIMATE_MODE_HEAT});
   traits.set_supported_custom_fan_modes({
-    "AUTO", "MANUAL", "CROWDED", "REFRESH", "FIREPLACE", "AWAY", "HOLIDAY", "COOKERHOOD"
+    "AUTO-VENT", "MANUAL", "CROWDED", "REFRESH", "FIREPLACE", "AWAY", "HOLIDAY", "COOKERHOOD"
   });
   return traits;
 }
