@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "esphome/core/component.h"
@@ -15,6 +14,8 @@ class SaveVTRClimate : public climate::Climate, public PollingComponent {
   climate::ClimateTraits traits() override;
   void dump_config() override;
   void set_modbus(modbus_controller::ModbusController *modbus);
+  // Ensure we default to HEAT and restore previous state if available
+  void setup() override;
 
  protected:
   modbus_controller::ModbusController *modbus_{nullptr};

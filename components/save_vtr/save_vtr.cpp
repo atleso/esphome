@@ -1,4 +1,3 @@
-
 #include "save_vtr.h"
 #include "esphome/core/log.h"
 
@@ -19,6 +18,21 @@ static constexpr uint16_t REG_EXTRACT_AIRFLOW = 14001;  // Extract air flow volu
 
 void SaveVTRClimate::set_modbus(modbus_controller::ModbusController *modbus) {
   this->modbus_ = modbus;
+}
+
+// Ensure we start in HEAT when no state is restored and never expose OFF internally
+void SaveVTRClimate::setup() {
+  auto restore = this->restore_state_();
+  if (restore.has_value()) {
+    auto m = restore->get_mode().value_or(climate::CLIMATE_MODE_HEAT);
+    if (m == climate::CLIMATE_MODE_OFF) m = climate::CLIMATE_MODE_HEAT;
+    this->mode = m;
+    if (restore->get_target_temperature().has_value())
+      this->target_temperature = *restore->get_target_temperature();
+  } else {
+    this->mode = climate::CLIMATE_MODE_HEAT;
+  }
+  this->publish_state();
 }
 
 static const char *const TAG = "save_vtr.climate";
@@ -102,6 +116,7 @@ static int fan_mode_to_reg(const std::string &mode) {
   if (mode == "FIREPLACE") return 5;
   if (mode == "AWAY") return 6;
   if (mode == "HOLIDAY") return 7;
+  if (mode == "COOKERHOOD") return 8; // read-only, do not write
   return 0;
 }
 
@@ -122,11 +137,21 @@ climate::ClimateTraits SaveVTRClimate::traits() {
 void SaveVTRClimate::control(const climate::ClimateCall &call) {
   if (this->modbus_ == nullptr) return;
 
+  // Handle requested HVAC mode (we only support HEAT; coerce/ignore OFF)
+  if (call.get_mode().has_value()) {
+    auto m = *call.get_mode();
+    if (m == climate::CLIMATE_MODE_HEAT) {
+      this->mode = climate::CLIMATE_MODE_HEAT;
+    } else if (m == climate::CLIMATE_MODE_OFF) {
+      ESP_LOGW(TAG, "OFF mode not supported; staying in HEAT");
+      this->mode = climate::CLIMATE_MODE_HEAT;
+    }
+  }
+
   // Write setpoint to Modbus if requested
   if (call.get_target_temperature().has_value()) {
     float temp = *call.get_target_temperature();
     ESP_LOGI(TAG, "Setting target temperature: %.1f", temp);
-    
     auto cmd = modbus_controller::ModbusCommandItem::create_write_single_command(
       this->modbus_, REG_SETPOINT, static_cast<uint16_t>(temp * 10)
     );
@@ -139,11 +164,15 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
     std::string mode = *call.get_custom_fan_mode();
     ESP_LOGI(TAG, "Requested custom fan mode change to: %s", mode.c_str());
     int reg_val = fan_mode_to_reg(mode);
-    if (reg_val != 8) { // 8 = COOKERHOOD, read-only
+    if (reg_val >= 1 && reg_val <= 7) {
       auto cmd = modbus_controller::ModbusCommandItem::create_write_single_command(
         this->modbus_, REG_FAN_MODE_REQ, static_cast<uint16_t>(reg_val)
       );
       this->modbus_->queue_command(cmd);
+    } else if (reg_val == 8) {
+      ESP_LOGW(TAG, "COOKERHOOD mode is read-only on Modbus; skipping write");
+    } else {
+      ESP_LOGW(TAG, "Unsupported fan mode request: %s; skipping", mode.c_str());
     }
   }
 
@@ -152,10 +181,8 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
 
 void SaveVTRClimate::update() {
   if (this->modbus_ != nullptr) {
-    // Read room temperature - signed 16-bit with /10.0 scaling
-    create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
-                                  REG_SUPPLY_TEMP, &this->current_temperature, "room temperature");
-    
+
+
     // Read setpoint - signed 16-bit with /10.0 scaling
     create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
                                   REG_SETPOINT, &this->target_temperature, "setpoint");
@@ -165,9 +192,11 @@ void SaveVTRClimate::update() {
                                   REG_OUTDOOR_TEMP, &this->outdoor_air_temp_, "outdoor air temperature");
     
     // Read supply air temperature - signed 16-bit with /10.0 scaling
-    create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
+    create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING,
                                   REG_SUPPLY_TEMP, &this->supply_air_temp_, "supply air temperature");
-    
+
+    this->current_temperature = this->supply_air_temp_; // Mirror current temperature from supply air temp                              
+
     // Read extract air temperature - signed 16-bit with /10.0 scaling
     create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
                                   REG_EXTRACT_TEMP, &this->extract_air_temp_, "extract air temperature");
@@ -226,6 +255,8 @@ void SaveVTRClimate::update() {
   
   // Publish state after a short delay to allow async operations to complete
   this->set_timeout(100, [this]() {
+    // Mirror current temperature from supply air temperature
+    this->current_temperature = this->supply_air_temp_;
     this->publish_state();
   });
 }
