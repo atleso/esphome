@@ -12,7 +12,7 @@ CONF_SAF_PERCENT = "saf_percent"
 CONF_SAF_VOLUME = "saf_volume"
 CONF_EAF_PERCENT = "eaf_percent"
 CONF_EAF_VOLUME = "eaf_volume"
-CONF_HEAT_DEMAND = "heat_demand_percent"
+CONF_HEAT_DEMAND = "heat_demand"
 CONF_OUTDOOR_AIR_TEMP = "outdoor_air_temp"
 CONF_SUPPLY_AIR_TEMP = "supply_air_temp"
 CONF_EXTRACT_AIR_TEMP = "extract_air_temp"
@@ -46,4 +46,4 @@ async def to_code(config):
         if name in config:
             sens = await sensor.new_sensor(config[name])
             cg.add(getattr(paren, f"set_{name}_sensor")(sens))
-    # sensor_core.register_sensor("save_vtr", CONFIG_SCHEMA, to_code)  # Removed incorrect call
+
