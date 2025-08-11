@@ -38,3 +38,22 @@ climate:
     name: "SAVE Climate"
     modbus_id: save_modbus
     update_interval: 30s
+
+sensor:
+  - platform: save_vtr
+    saf_percent:
+      name: "Supply Airflow %"
+    saf_volume:
+      name: "Supply Airflow Volume"
+    eaf_percent:
+      name: "Extract Airflow %"
+    eaf_volume:
+      name: "Extract Airflow Volume"
+    heat_demand_percent:
+      name: "Heat Demand"
+    outdoor_air_temp:
+      name: "Outdoor Air Temp"
+    supply_air_temp:
+      name: "Supply Air Temp"
+    extract_air_temp:
+      name: "Extract Air Temp"
