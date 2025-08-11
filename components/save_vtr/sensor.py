@@ -3,10 +3,7 @@ import esphome.config_validation as cv
 from esphome.components import sensor
 from esphome.const import CONF_ID, CONF_UNIT_OF_MEASUREMENT, CONF_ICON, CONF_ACCURACY_DECIMALS
 from . import save_vtr_ns, SaveVTRClimate
-from . import climate  # noqa: F401
-from . import sensor  # noqa: F401
 
-AUTO_LOAD = ["climate", "sensor"]
 
 DEPENDENCIES = ["save_vtr"]
 
