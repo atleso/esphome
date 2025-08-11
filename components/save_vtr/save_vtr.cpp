@@ -194,7 +194,7 @@ void SaveVTRClimate::update() {
       [this](modbus_controller::ModbusRegisterType, uint16_t, const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
           uint16_t eaf_raw = (data[0] << 8) | data[1];
-          this->eaf_volume_ = static_cast<float>(eaf_raw) ) * 3.0f;
+          this->eaf_volume_ = static_cast<float>(eaf_raw) * 3.0f;
           this->eaf_percent_ = static_cast<float>(eaf_raw); 
           ESP_LOGD(TAG, "Read extract air flow: %.1f m³/h (raw: %u)", this->eaf_volume_, eaf_raw);
         } else {
