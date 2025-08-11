@@ -3,6 +3,7 @@
 #include "esphome/core/component.h"
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/modbus_controller/modbus_controller.h"
+#include "esphome/components/sensor/sensor.h"
 
 namespace esphome {
 namespace save_vtr {
@@ -17,6 +18,7 @@ class SaveVTRClimate : public climate::Climate, public PollingComponent {
   void setup() override;
 
   // Sensor setter methods
+
   void set_saf_percent_sensor(esphome::sensor::Sensor *sensor) { saf_percent_sensor_ = sensor; }
   void set_saf_volume_sensor(esphome::sensor::Sensor *sensor) { saf_volume_sensor_ = sensor; }
   void set_eaf_percent_sensor(esphome::sensor::Sensor *sensor) { eaf_percent_sensor_ = sensor; }
