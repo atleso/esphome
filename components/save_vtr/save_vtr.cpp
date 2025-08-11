@@ -95,14 +95,13 @@ static std::string reg_to_fan_mode_string(int reg) {
 
 // Map custom fan mode string to register value
 static int fan_mode_to_reg(const std::string &mode) {
-  if (mode == "AUTO") return 0;
-  if (mode == "MANUAL") return 1;
-  if (mode == "CROWDED") return 2;
-  if (mode == "REFRESH") return 3;
-  if (mode == "FIREPLACE") return 4;
-  if (mode == "AWAY") return 5;
-  if (mode == "HOLIDAY") return 6;
-  if (mode == "COOKERHOOD") return 7;
+  if (mode == "AUTO") return 1;
+  if (mode == "MANUAL") return 2;
+  if (mode == "CROWDED") return 3;
+  if (mode == "REFRESH") return 4;
+  if (mode == "FIREPLACE") return 5;
+  if (mode == "AWAY") return 6;
+  if (mode == "HOLIDAY") return 7;
   return 0;
 }
 
