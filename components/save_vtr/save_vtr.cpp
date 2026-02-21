@@ -123,7 +123,7 @@ static int fan_mode_to_reg(const std::string &mode) {
 
 climate::ClimateTraits SaveVTRClimate::traits() {
   auto traits = climate::ClimateTraits();
-  traits.set_supports_current_temperature(true);
+  traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
   traits.set_visual_temperature_step(1.0f);
   traits.set_visual_min_temperature(12.0f); 
   traits.set_visual_max_temperature(30.0f);
@@ -161,8 +161,8 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
   }
 
   // Write custom fan mode to Modbus if requested
-  if (call.get_custom_fan_mode().has_value()) {
-    std::string mode = *call.get_custom_fan_mode();
+  if (call.has_custom_fan_mode()) {
+    std::string mode = call.get_custom_fan_mode().str();
     ESP_LOGI(TAG, "Requested custom fan mode change to: %s", mode.c_str());
     int reg_val = fan_mode_to_reg(mode);
     if (reg_val >= 1 && reg_val <= 7) {
@@ -240,8 +240,8 @@ void SaveVTRClimate::update() {
       [this](modbus_controller::ModbusRegisterType, uint16_t, const std::vector<uint8_t> &data) {
         if (data.size() >= 2) {
           uint16_t fanmode_raw = (data[0] << 8) | data[1];
-          this->custom_fan_mode = reg_to_fan_mode_string(fanmode_raw);
-          ESP_LOGD(TAG, "Read fan mode: %s (%d)", this->custom_fan_mode.value().c_str(), fanmode_raw);
+          this->set_custom_fan_mode_(reg_to_fan_mode_string(fanmode_raw).c_str());
+          ESP_LOGD(TAG, "Read fan mode: %s (%d)", this->get_custom_fan_mode().c_str(), fanmode_raw);
         } else {
           ESP_LOGE(TAG, "Insufficient data for fan mode: got %d bytes, expected 2", data.size());
         }
