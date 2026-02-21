@@ -15,6 +15,8 @@ static constexpr uint16_t REG_SUPPLY_TEMP = 12102;      // Supply air temperatur
 static constexpr uint16_t REG_EXTRACT_TEMP = 12543;     // Extract air temperature (holding)
 static constexpr uint16_t REG_SUPPLY_AIRFLOW = 14000;   // Supply air flow volume (read)
 static constexpr uint16_t REG_EXTRACT_AIRFLOW = 14001;  // Extract air flow volume (read)
+static constexpr uint16_t REG_SENSOR_RPM_SAF = 12400;   // Supply air fan RPM (input register)
+static constexpr uint16_t REG_SENSOR_RPM_EAF = 12401;   // Extract air fan RPM (input register)
 
 void SaveVTRClimate::set_modbus(modbus_controller::ModbusController *modbus) {
   this->modbus_ = modbus;
@@ -229,6 +231,10 @@ void SaveVTRClimate::update() {
       }
     );
     this->modbus_->queue_command(cmd_eaf);
+    create_uint16_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::READ,
+                             REG_SENSOR_RPM_SAF, &this->rpm_saf_, "supply air fan RPM", " RPM");
+    create_uint16_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::READ,
+                             REG_SENSOR_RPM_EAF, &this->rpm_eaf_, "extract air fan RPM", " RPM");
     auto cmd_fan = modbus_controller::ModbusCommandItem::create_read_command(
       this->modbus_, modbus_controller::ModbusRegisterType::READ, REG_FAN_MODE, 1,
       [this](modbus_controller::ModbusRegisterType, uint16_t, const std::vector<uint8_t> &data) {
@@ -254,6 +260,10 @@ void SaveVTRClimate::update() {
       this->supply_air_temp_sensor_->publish_state(this->supply_air_temp_);
     if (this->extract_air_temp_sensor_ != nullptr)
       this->extract_air_temp_sensor_->publish_state(this->extract_air_temp_);
+    if (this->rpm_saf_sensor_ != nullptr)
+      this->rpm_saf_sensor_->publish_state(this->rpm_saf_);
+    if (this->rpm_eaf_sensor_ != nullptr)
+      this->rpm_eaf_sensor_->publish_state(this->rpm_eaf_);
     this->publish_state();
   });
 }
