@@ -17,27 +17,12 @@ modbus_controller:
     command_throttle: 200ms
     setup_priority: -10
 
-binary_sensor:
-  - platform: modbus_controller
-    modbus_controller_id: save_modbus
-    name: "VTR Filter Alarm"
-    address: 7007
-    register_type: read
-    device_class: problem
-    
-  - platform: modbus_controller
-    modbus_controller_id: save_modbus
-    name: "VTR Output Alarm"
-    address: 14003
-    register_type: read
-    device_class: problem
-
-
 climate:
   - platform: save_vtr
     name: "SAVE Climate"
     modbus_id: save_modbus
     update_interval: 30s
+    alarm_update_interval: 30s
 
 sensor:
   - platform: save_vtr
@@ -49,7 +34,7 @@ sensor:
       name: "Extract Airflow %"
     eaf_volume:
       name: "Extract Airflow Volume"
-    heat_demand_percent:
+    heat_demand:
       name: "Heat Demand"
     outdoor_air_temp:
       name: "Outdoor Air Temp"
@@ -57,3 +42,93 @@ sensor:
       name: "Supply Air Temp"
     extract_air_temp:
       name: "Extract Air Temp"
+    rpm_saf:
+      name: "Supply Fan RPM"
+    rpm_eaf:
+      name: "Extract Fan RPM"
+    heat_exchanger_utilisation:
+      name: "Heat Exchanger Utilisation"
+    pdm_rhs:
+      name: "PDM RHS Sensor"
+    alarm_filter_warning_counter:
+      name: "Filter Warning Counter"
+
+binary_sensor:
+  - platform: save_vtr
+    alarm_filter_was_detected:
+      name: "Alarm Filter Was Detected"
+    alarm_output:
+      name: "Alarm Output"
+    alarm_type_a:
+      name: "Alarm Type A"
+    alarm_type_b:
+      name: "Alarm Type B"
+    alarm_type_c:
+      name: "Alarm Type C"
+
+text_sensor:
+  - platform: save_vtr
+    alarm_saf_ctrl:
+      name: "Alarm SAF Controller"
+    alarm_eaf_ctrl:
+      name: "Alarm EAF Controller"
+    alarm_frost_prot:
+      name: "Alarm Frost Protection"
+    alarm_defrosting:
+      name: "Alarm Defrosting"
+    alarm_saf_rpm:
+      name: "Alarm SAF RPM"
+    alarm_eaf_rpm:
+      name: "Alarm EAF RPM"
+    alarm_fpt:
+      name: "Alarm FPT"
+    alarm_oat:
+      name: "Alarm OAT"
+    alarm_sat:
+      name: "Alarm SAT"
+    alarm_rat:
+      name: "Alarm RAT"
+    alarm_eat:
+      name: "Alarm EAT"
+    alarm_ect:
+      name: "Alarm ECT"
+    alarm_eft:
+      name: "Alarm EFT"
+    alarm_oht:
+      name: "Alarm OHT"
+    alarm_emt:
+      name: "Alarm EMT"
+    alarm_rgs:
+      name: "Alarm RGS"
+    alarm_bys:
+      name: "Alarm BYS"
+    alarm_secondary_air:
+      name: "Alarm Secondary Air"
+    alarm_filter:
+      name: "Alarm Filter"
+    alarm_extra_controller:
+      name: "Alarm Extra Controller"
+    alarm_external_stop:
+      name: "Alarm External Stop"
+    alarm_rh:
+      name: "Alarm RH"
+    alarm_co2:
+      name: "Alarm CO2"
+    alarm_low_sat:
+      name: "Alarm Low SAT"
+    alarm_byf:
+      name: "Alarm BYF"
+    alarm_manual_override_outputs:
+      name: "Alarm Manual Override Outputs"
+    alarm_pdm_rhs:
+      name: "Alarm PDM RHS"
+    alarm_pdm_eat:
+      name: "Alarm PDM EAT"
+    alarm_manual_fan_stop:
+      name: "Alarm Manual Fan Stop"
+    alarm_overheat_temperature:
+      name: "Alarm Overheat Temperature"
+    alarm_fire:
+      name: "Alarm Fire"
+    alarm_filter_warning:
+      name: "Alarm Filter Warning"
