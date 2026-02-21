@@ -70,6 +70,7 @@ class SaveVTRClimate : public climate::Climate, public PollingComponent {
 
   // Alarm update interval (ms)
   uint32_t alarm_update_interval_{30000};
+  bool update_pending_{false};  // guard against duplicate modbus commands
 
   // Sensor pointers
   esphome::sensor::Sensor *saf_percent_sensor_{nullptr};

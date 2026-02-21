@@ -254,7 +254,12 @@ void SaveVTRClimate::control(const climate::ClimateCall &call) {
 
 
 void SaveVTRClimate::update() {
+  if (this->update_pending_) {
+    ESP_LOGD(TAG, "Previous update still in progress, skipping");
+    return;
+  }
   if (this->modbus_ != nullptr) {
+    this->update_pending_ = true;
     // ...existing code for modbus reads...
     create_temperature_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING, 
                                   REG_SETPOINT, &this->target_temperature, "setpoint");
@@ -326,7 +331,8 @@ void SaveVTRClimate::update() {
     );
     this->modbus_->queue_command(cmd_fan);
   }
-  this->set_timeout(100, [this]() {
+  this->set_timeout("update_publish", 10000, [this]() {
+    this->update_pending_ = false;
     this->current_temperature = this->supply_air_temp_;
     // Publish sensors for other values
     if (this->heat_demand_sensor_ != nullptr)
