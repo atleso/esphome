@@ -16,6 +16,8 @@ CONF_HEAT_DEMAND = "heat_demand"
 CONF_OUTDOOR_AIR_TEMP = "outdoor_air_temp"
 CONF_SUPPLY_AIR_TEMP = "supply_air_temp"
 CONF_EXTRACT_AIR_TEMP = "extract_air_temp"
+CONF_RPM_SAF = "rpm_saf"
+CONF_RPM_EAF = "rpm_eaf"
 
 SENSORS = [
     (CONF_SAF_PERCENT, "%", "mdi:fan", 0),
@@ -26,6 +28,8 @@ SENSORS = [
     (CONF_OUTDOOR_AIR_TEMP, "°C", "mdi:thermometer", 1),
     (CONF_SUPPLY_AIR_TEMP, "°C", "mdi:thermometer", 1),
     (CONF_EXTRACT_AIR_TEMP, "°C", "mdi:thermometer", 1),
+    (CONF_RPM_SAF, "RPM", "mdi:fan", 0),
+    (CONF_RPM_EAF, "RPM", "mdi:fan", 0),
 ]
 
 CONFIG_SCHEMA = cv.Schema({
