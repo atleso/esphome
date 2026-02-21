@@ -55,9 +55,9 @@ sensor:
 
 binary_sensor:
   - platform: save_vtr
-    filter_alarm_was_detected:
+    alarm_filter_was_detected:
       name: "Filter Alarm Was Detected"
-    output_alarm:
+    alarm_output:
       name: "Output Alarm"
     alarm_type_a:
       name: "Alarm Type A"

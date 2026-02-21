@@ -9,8 +9,8 @@ DEPENDENCIES = ["save_vtr"]
 
 # Ordered list of 0-1/Boolean alarm binary sensors (index must match ALARM_BINARY_REGS in save_vtr.cpp)
 ALARM_BINARY_SENSORS = [
-    ("filter_alarm_was_detected", 0),
-    ("output_alarm", 1),
+    ("alarm_filter_was_detected", 0),
+    ("alarm_output", 1),
     ("alarm_type_a", 2),
     ("alarm_type_b", 3),
     ("alarm_type_c", 4),
