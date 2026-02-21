@@ -15,6 +15,6 @@ CONFIG_SCHEMA = cv.Schema({})
 async def to_code(config):
     pass
 
-AUTO_LOAD = ["climate", "sensor"]
+AUTO_LOAD = ["climate", "sensor", "binary_sensor", "text_sensor"]
 
 

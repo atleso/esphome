@@ -17,6 +17,77 @@ static constexpr uint16_t REG_SUPPLY_AIRFLOW = 14000;   // Supply air flow volum
 static constexpr uint16_t REG_EXTRACT_AIRFLOW = 14001;  // Extract air flow volume (read)
 static constexpr uint16_t REG_SENSOR_RPM_SAF = 12400;   // Supply air fan RPM (input register)
 static constexpr uint16_t REG_SENSOR_RPM_EAF = 12401;   // Extract air fan RPM (input register)
+static constexpr uint16_t REG_OUTPUT_Y2_ANALOG = 14102; // Heat exchanger utilisation 0-100% (read input register)
+static constexpr uint16_t REG_SENSOR_RHS_PDM = 12135;   // PDM RHS sensor 0-100 (holding register)
+
+// Alarm register addresses (read input registers)
+static constexpr uint16_t REG_FILTER_ALARM_WAS_DETECTED = 7006;   // Boolean
+static constexpr uint16_t REG_OUTPUT_ALARM = 14002;                // 0-1
+static constexpr uint16_t REG_ALARM_SAF_CTRL = 15001;             // 0-3
+static constexpr uint16_t REG_ALARM_EAF_CTRL = 15008;             // 0-3
+static constexpr uint16_t REG_ALARM_FROST_PROT = 15015;           // 0-3
+static constexpr uint16_t REG_ALARM_DEFROSTING = 15022;           // 0-3
+static constexpr uint16_t REG_ALARM_SAF_RPM = 15029;              // 0-3
+static constexpr uint16_t REG_ALARM_EAF_RPM = 15036;              // 0-3
+static constexpr uint16_t REG_ALARM_FPT = 15057;                  // 0-3
+static constexpr uint16_t REG_ALARM_OAT = 15064;                  // 0-3
+static constexpr uint16_t REG_ALARM_SAT = 15071;                  // 0-3
+static constexpr uint16_t REG_ALARM_RAT = 15078;                  // 0-3
+static constexpr uint16_t REG_ALARM_EAT = 15085;                  // 0-3
+static constexpr uint16_t REG_ALARM_ECT = 15092;                  // 0-3
+static constexpr uint16_t REG_ALARM_EFT = 15099;                  // 0-3
+static constexpr uint16_t REG_ALARM_OHT = 15106;                  // 0-3
+static constexpr uint16_t REG_ALARM_EMT = 15113;                  // 0-3
+static constexpr uint16_t REG_ALARM_RGS = 15120;                  // 0-3
+static constexpr uint16_t REG_ALARM_BYS = 15127;                  // 0-3
+static constexpr uint16_t REG_ALARM_SECONDARY_AIR = 15134;        // 0-3
+static constexpr uint16_t REG_ALARM_FILTER = 15141;               // 0-3
+static constexpr uint16_t REG_ALARM_EXTRA_CONTROLLER = 15148;     // 0-3
+static constexpr uint16_t REG_ALARM_EXTERNAL_STOP = 15155;        // 0-3
+static constexpr uint16_t REG_ALARM_RH = 15162;                   // 0-3
+static constexpr uint16_t REG_ALARM_CO2 = 15169;                  // 0-3
+static constexpr uint16_t REG_ALARM_LOW_SAT = 15176;              // 0-3
+static constexpr uint16_t REG_ALARM_BYF = 15183;                  // 0-3
+static constexpr uint16_t REG_ALARM_MANUAL_OVERRIDE_OUTPUTS = 15501; // 0-3
+static constexpr uint16_t REG_ALARM_PDM_RHS = 15508;              // 0-3
+static constexpr uint16_t REG_ALARM_PDM_EAT = 15515;              // 0-3
+static constexpr uint16_t REG_ALARM_MANUAL_FAN_STOP = 15522;      // 0-3
+static constexpr uint16_t REG_ALARM_OVERHEAT_TEMPERATURE = 15529; // 0-3
+static constexpr uint16_t REG_ALARM_FIRE_ALARM = 15536;           // 0-3
+static constexpr uint16_t REG_ALARM_FILTER_WARNING = 15543;       // 0-3
+static constexpr uint16_t REG_ALARM_FILTER_WARNING_COUNTER = 15548; // Counter
+static constexpr uint16_t REG_ALARM_TYPE_A = 15900;               // 0-1
+static constexpr uint16_t REG_ALARM_TYPE_B = 15901;               // 0-1
+static constexpr uint16_t REG_ALARM_TYPE_C = 15902;               // 0-1
+
+// Ordered list of 0-3 alarm text sensor registers (must match ALARM_TEXT_SENSORS in text_sensor.py)
+static constexpr uint16_t ALARM_TEXT_REGS[ALARM_TEXT_SENSOR_COUNT] = {
+  REG_ALARM_SAF_CTRL, REG_ALARM_EAF_CTRL, REG_ALARM_FROST_PROT, REG_ALARM_DEFROSTING,
+  REG_ALARM_SAF_RPM, REG_ALARM_EAF_RPM, REG_ALARM_FPT, REG_ALARM_OAT,
+  REG_ALARM_SAT, REG_ALARM_RAT, REG_ALARM_EAT, REG_ALARM_ECT,
+  REG_ALARM_EFT, REG_ALARM_OHT, REG_ALARM_EMT, REG_ALARM_RGS,
+  REG_ALARM_BYS, REG_ALARM_SECONDARY_AIR, REG_ALARM_FILTER, REG_ALARM_EXTRA_CONTROLLER,
+  REG_ALARM_EXTERNAL_STOP, REG_ALARM_RH, REG_ALARM_CO2, REG_ALARM_LOW_SAT,
+  REG_ALARM_BYF, REG_ALARM_MANUAL_OVERRIDE_OUTPUTS, REG_ALARM_PDM_RHS, REG_ALARM_PDM_EAT,
+  REG_ALARM_MANUAL_FAN_STOP, REG_ALARM_OVERHEAT_TEMPERATURE, REG_ALARM_FIRE_ALARM,
+  REG_ALARM_FILTER_WARNING,
+};
+
+// Ordered list of 0-1 alarm binary sensor registers (must match ALARM_BINARY_SENSORS in binary_sensor.py)
+static constexpr uint16_t ALARM_BINARY_REGS[ALARM_BINARY_SENSOR_COUNT] = {
+  REG_FILTER_ALARM_WAS_DETECTED, REG_OUTPUT_ALARM,
+  REG_ALARM_TYPE_A, REG_ALARM_TYPE_B, REG_ALARM_TYPE_C,
+};
+
+static const char *alarm_state_string(uint16_t value) {
+  switch (value) {
+    case 0: return "Inactive";
+    case 1: return "Active";
+    case 2: return "Waiting";
+    case 3: return "Cleared Error Active";
+    default: return "Unknown";
+  }
+}
 
 void SaveVTRClimate::set_modbus(modbus_controller::ModbusController *modbus) {
   this->modbus_ = modbus;
@@ -34,6 +105,7 @@ void SaveVTRClimate::setup() {
     this->mode = climate::CLIMATE_MODE_HEAT;
   }
   this->publish_state();
+  this->set_interval("alarms", this->alarm_update_interval_, [this]() { this->update_alarms(); });
 }
 
 static const char *const TAG = "save_vtr.climate";
@@ -235,6 +307,11 @@ void SaveVTRClimate::update() {
                              REG_SENSOR_RPM_SAF, &this->rpm_saf_, "supply air fan RPM", " RPM");
     create_uint16_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::READ,
                              REG_SENSOR_RPM_EAF, &this->rpm_eaf_, "extract air fan RPM", " RPM");
+    create_uint16_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::READ,
+                             REG_OUTPUT_Y2_ANALOG, &this->heat_exchanger_utilisation_,
+                             "heat exchanger utilisation", "%");
+    create_uint16_read_command(this, this->modbus_, modbus_controller::ModbusRegisterType::HOLDING,
+                             REG_SENSOR_RHS_PDM, &this->pdm_rhs_, "PDM RHS sensor");
     auto cmd_fan = modbus_controller::ModbusCommandItem::create_read_command(
       this->modbus_, modbus_controller::ModbusRegisterType::READ, REG_FAN_MODE, 1,
       [this](modbus_controller::ModbusRegisterType, uint16_t, const std::vector<uint8_t> &data) {
@@ -264,8 +341,79 @@ void SaveVTRClimate::update() {
       this->rpm_saf_sensor_->publish_state(this->rpm_saf_);
     if (this->rpm_eaf_sensor_ != nullptr)
       this->rpm_eaf_sensor_->publish_state(this->rpm_eaf_);
+    if (this->heat_exchanger_utilisation_sensor_ != nullptr)
+      this->heat_exchanger_utilisation_sensor_->publish_state(this->heat_exchanger_utilisation_);
+    if (this->pdm_rhs_sensor_ != nullptr)
+      this->pdm_rhs_sensor_->publish_state(this->pdm_rhs_);
     this->publish_state();
   });
+}
+
+
+void SaveVTRClimate::update_alarms() {
+  if (this->modbus_ == nullptr)
+    return;
+
+  // Read 0-3 alarm text sensors
+  for (size_t i = 0; i < ALARM_TEXT_SENSOR_COUNT; i++) {
+    if (this->alarm_text_sensors_[i] == nullptr)
+      continue;
+    uint16_t reg = ALARM_TEXT_REGS[i];
+    auto cmd = modbus_controller::ModbusCommandItem::create_read_command(
+      this->modbus_, modbus_controller::ModbusRegisterType::READ, reg, 1,
+      [this, i, reg](modbus_controller::ModbusRegisterType, uint16_t,
+                     const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          uint16_t raw = (data[0] << 8) | data[1];
+          const char *state = alarm_state_string(raw);
+          ESP_LOGD(TAG, "Alarm[%d] reg %u: %s (%u)", i, reg, state, raw);
+          this->alarm_text_sensors_[i]->publish_state(state);
+        } else {
+          ESP_LOGE(TAG, "Insufficient data for alarm[%d] reg %u", i, reg);
+        }
+      }
+    );
+    this->modbus_->queue_command(cmd);
+  }
+
+  // Read 0-1 alarm binary sensors
+  for (size_t i = 0; i < ALARM_BINARY_SENSOR_COUNT; i++) {
+    if (this->alarm_binary_sensors_[i] == nullptr)
+      continue;
+    uint16_t reg = ALARM_BINARY_REGS[i];
+    auto cmd = modbus_controller::ModbusCommandItem::create_read_command(
+      this->modbus_, modbus_controller::ModbusRegisterType::READ, reg, 1,
+      [this, i, reg](modbus_controller::ModbusRegisterType, uint16_t,
+                     const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          uint16_t raw = (data[0] << 8) | data[1];
+          bool state = (raw != 0);
+          ESP_LOGD(TAG, "Alarm binary[%d] reg %u: %s (%u)", i, reg, state ? "Alarm" : "No alarm", raw);
+          this->alarm_binary_sensors_[i]->publish_state(state);
+        } else {
+          ESP_LOGE(TAG, "Insufficient data for alarm binary[%d] reg %u", i, reg);
+        }
+      }
+    );
+    this->modbus_->queue_command(cmd);
+  }
+
+  // Read alarm filter warning counter
+  if (this->alarm_filter_warning_counter_sensor_ != nullptr) {
+    auto cmd = modbus_controller::ModbusCommandItem::create_read_command(
+      this->modbus_, modbus_controller::ModbusRegisterType::READ, REG_ALARM_FILTER_WARNING_COUNTER, 1,
+      [this](modbus_controller::ModbusRegisterType, uint16_t, const std::vector<uint8_t> &data) {
+        if (data.size() >= 2) {
+          uint16_t raw = (data[0] << 8) | data[1];
+          ESP_LOGD(TAG, "Alarm filter warning counter: %u", raw);
+          this->alarm_filter_warning_counter_sensor_->publish_state(static_cast<float>(raw));
+        } else {
+          ESP_LOGE(TAG, "Insufficient data for alarm filter warning counter");
+        }
+      }
+    );
+    this->modbus_->queue_command(cmd);
+  }
 }
 
 

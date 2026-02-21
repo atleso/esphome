@@ -9,12 +9,13 @@ DEPENDENCIES = ["modbus_controller"]
 save_vtr_ns = cg.esphome_ns.namespace("save_vtr")
 SaveVTRClimate = save_vtr_ns.class_("SaveVTRClimate", climate.Climate, cg.PollingComponent)
 
-
+CONF_ALARM_UPDATE_INTERVAL = "alarm_update_interval"
 
 CONFIG_SCHEMA = climate.climate_schema(SaveVTRClimate).extend(
     {
         cv.Required("modbus_id"): cv.use_id(ModbusController),
         cv.Optional(CONF_UPDATE_INTERVAL, default="30s"): cv.update_interval,
+        cv.Optional(CONF_ALARM_UPDATE_INTERVAL, default="30s"): cv.update_interval,
     }
 )
 
@@ -25,3 +26,4 @@ async def to_code(config):
     await climate.register_climate(var, config)
     modbus = await cg.get_variable(config["modbus_id"])
     cg.add(var.set_modbus(modbus))
+    cg.add(var.set_alarm_update_interval(config[CONF_ALARM_UPDATE_INTERVAL]))

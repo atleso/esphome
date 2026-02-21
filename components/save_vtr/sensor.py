@@ -18,6 +18,9 @@ CONF_SUPPLY_AIR_TEMP = "supply_air_temp"
 CONF_EXTRACT_AIR_TEMP = "extract_air_temp"
 CONF_RPM_SAF = "rpm_saf"
 CONF_RPM_EAF = "rpm_eaf"
+CONF_HEAT_EXCHANGER_UTILISATION = "heat_exchanger_utilisation"
+CONF_PDM_RHS = "pdm_rhs"
+CONF_ALARM_FILTER_WARNING_COUNTER = "alarm_filter_warning_counter"
 
 SENSORS = [
     (CONF_SAF_PERCENT, "%", "mdi:fan", 0),
@@ -30,6 +33,9 @@ SENSORS = [
     (CONF_EXTRACT_AIR_TEMP, "°C", "mdi:thermometer", 1),
     (CONF_RPM_SAF, "RPM", "mdi:fan", 0),
     (CONF_RPM_EAF, "RPM", "mdi:fan", 0),
+    (CONF_HEAT_EXCHANGER_UTILISATION, "%", "mdi:heat-wave", 0),
+    (CONF_PDM_RHS, "%", "mdi:water-percent", 0),
+    (CONF_ALARM_FILTER_WARNING_COUNTER, "", "mdi:counter", 0),
 ]
 
 CONFIG_SCHEMA = cv.Schema({
