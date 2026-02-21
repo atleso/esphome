@@ -56,9 +56,9 @@ sensor:
 binary_sensor:
   - platform: save_vtr
     alarm_filter_was_detected:
-      name: "Filter Alarm Was Detected"
+      name: "Alarm Filter Was Detected"
     alarm_output:
-      name: "Output Alarm"
+      name: "Alarm Output"
     alarm_type_a:
       name: "Alarm Type A"
     alarm_type_b:
@@ -69,66 +69,66 @@ binary_sensor:
 text_sensor:
   - platform: save_vtr
     alarm_saf_ctrl:
-      name: "SAF Controller Alarm"
+      name: "Alarm SAF Controller"
     alarm_eaf_ctrl:
-      name: "EAF Controller Alarm"
+      name: "Alarm EAF Controller"
     alarm_frost_prot:
-      name: "Frost Protection Alarm"
+      name: "Alarm Frost Protection"
     alarm_defrosting:
-      name: "Defrosting Alarm"
+      name: "Alarm Defrosting"
     alarm_saf_rpm:
-      name: "SAF RPM Alarm"
+      name: "Alarm SAF RPM"
     alarm_eaf_rpm:
-      name: "EAF RPM Alarm"
+      name: "Alarm EAF RPM"
     alarm_fpt:
-      name: "FPT Alarm"
+      name: "Alarm FPT"
     alarm_oat:
-      name: "OAT Alarm"
+      name: "Alarm OAT"
     alarm_sat:
-      name: "SAT Alarm"
+      name: "Alarm SAT"
     alarm_rat:
-      name: "RAT Alarm"
+      name: "Alarm RAT"
     alarm_eat:
-      name: "EAT Alarm"
+      name: "Alarm EAT"
     alarm_ect:
-      name: "ECT Alarm"
+      name: "Alarm ECT"
     alarm_eft:
-      name: "EFT Alarm"
+      name: "Alarm EFT"
     alarm_oht:
-      name: "OHT Alarm"
+      name: "Alarm OHT"
     alarm_emt:
-      name: "EMT Alarm"
+      name: "Alarm EMT"
     alarm_rgs:
-      name: "RGS Alarm"
+      name: "Alarm RGS"
     alarm_bys:
-      name: "BYS Alarm"
+      name: "Alarm BYS"
     alarm_secondary_air:
-      name: "Secondary Air Alarm"
+      name: "Alarm Secondary Air"
     alarm_filter:
-      name: "Filter Alarm"
+      name: "Alarm Filter"
     alarm_extra_controller:
-      name: "Extra Controller Alarm"
+      name: "Alarm Extra Controller"
     alarm_external_stop:
-      name: "External Stop Alarm"
+      name: "Alarm External Stop"
     alarm_rh:
-      name: "RH Alarm"
+      name: "Alarm RH"
     alarm_co2:
-      name: "CO2 Alarm"
+      name: "Alarm CO2"
     alarm_low_sat:
-      name: "Low SAT Alarm"
+      name: "Alarm Low SAT"
     alarm_byf:
-      name: "BYF Alarm"
+      name: "Alarm BYF"
     alarm_manual_override_outputs:
-      name: "Manual Override Outputs Alarm"
+      name: "Alarm Manual Override Outputs"
     alarm_pdm_rhs:
-      name: "PDM RHS Alarm"
+      name: "Alarm PDM RHS"
     alarm_pdm_eat:
-      name: "PDM EAT Alarm"
+      name: "Alarm PDM EAT"
     alarm_manual_fan_stop:
-      name: "Manual Fan Stop Alarm"
+      name: "Alarm Manual Fan Stop"
     alarm_overheat_temperature:
-      name: "Overheat Temperature Alarm"
+      name: "Alarm Overheat Temperature"
     alarm_fire:
-      name: "Fire Alarm"
+      name: "Alarm Fire"
     alarm_filter_warning:
-      name: "Filter Warning Alarm"
+      name: "Alarm Filter Warning"
