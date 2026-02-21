@@ -128,7 +128,7 @@ text_sensor:
       name: "Manual Fan Stop Alarm"
     alarm_overheat_temperature:
       name: "Overheat Temperature Alarm"
-    alarm_fire_alarm:
+    alarm_fire:
       name: "Fire Alarm"
     alarm_filter_warning:
       name: "Filter Warning Alarm"

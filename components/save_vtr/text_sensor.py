@@ -39,7 +39,7 @@ ALARM_TEXT_SENSORS = [
     ("alarm_pdm_eat", 27),
     ("alarm_manual_fan_stop", 28),
     ("alarm_overheat_temperature", 29),
-    ("alarm_fire_alarm", 30),
+    ("alarm_fire", 30),
     ("alarm_filter_warning", 31),
 ]
 
