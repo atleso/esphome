@@ -101,6 +101,10 @@ a mode round-trip (`AUTO-VENT` -> readback) on a real unit after upgrading.
 
 ## Setup
 
+The quickest setup is the ready-made package in
+[`packages/save_vtr`](../../packages/save_vtr/README.md): one `packages:`
+entry gives you the bus, climate and every entity. Manual setup:
+
 ```yaml
 external_components:
   - source: github://atleso/esphome
