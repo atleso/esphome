@@ -1,6 +1,7 @@
 #include "save_vtr.h"
 #include "esphome/core/log.h"
 
+#include <cinttypes>
 #include <cstring>
 
 namespace esphome {
@@ -268,7 +269,7 @@ bool SaveVTRClimate::queue_read_registers_(modbus::EntityType entity_type, uint1
   if (ok) {
     this->pending_reads_++;
   } else {
-    ESP_LOGD(TAG, "Modbus hub refused read type=%u start=%u count=%u",
+    ESP_LOGD(TAG, "Modbus hub refused read type=%" PRIu32 " start=%u count=%u",
              static_cast<uint32_t>(entity_type), start_address, count);
   }
   return ok;
@@ -883,7 +884,7 @@ void SaveVTRClimate::dump_config() {
   LOG_CLIMATE("  ", "SaveVTRClimate", this);
   ESP_LOGCONFIG(TAG, "  Modbus address: %u", this->modbus_ != nullptr ? this->modbus_->device_address() : 0);
   ESP_LOGCONFIG(TAG, "  Max airflow: %.0f m3/h", this->max_airflow_);
-  ESP_LOGCONFIG(TAG, "  Alarm detail interval: %ums", this->alarm_update_interval_);
+  ESP_LOGCONFIG(TAG, "  Alarm detail interval: %" PRIu32 "ms", this->alarm_update_interval_);
   ESP_LOGCONFIG(TAG, "  Alarm summary flags: %u, detail registers: %u",
                 static_cast<unsigned>(ALARM_BINARY_SENSOR_COUNT),
                 static_cast<unsigned>(ALARM_TEXT_SENSOR_COUNT));
