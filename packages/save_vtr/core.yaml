@@ -1,0 +1,120 @@
+# Remote package for the save_vtr component. See packages/save_vtr/README.md.
+#
+# Bus, Modbus controller, climate entity and every telemetry/summary entity.
+# Override any of the defaults below through `vars:` in your packages entry.
+
+defaults:
+  save_vtr_ref: main
+  tx_pin: GPIO16
+  rx_pin: GPIO17
+  baud_rate: "115200"
+  modbus_address: "5"
+  update_interval: 10s
+  alarm_update_interval: 300s
+  max_airflow: "300"
+  climate_name: "SAVE Climate"
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/atleso/esphome
+      ref: ${save_vtr_ref}
+    components: [save_vtr]
+
+uart:
+  id: save_vtr_uart
+  tx_pin: ${tx_pin}
+  rx_pin: ${rx_pin}
+  baud_rate: ${baud_rate}
+  stop_bits: 1
+  parity: NONE
+
+modbus:
+  id: save_vtr_modbus
+  uart_id: save_vtr_uart
+
+modbus_controller:
+  - id: save_vtr_controller
+    modbus_id: save_vtr_modbus
+    address: ${modbus_address}
+
+climate:
+  - platform: save_vtr
+    name: ${climate_name}
+    modbus_id: save_vtr_controller
+    update_interval: ${update_interval}
+    alarm_update_interval: ${alarm_update_interval}
+    max_airflow: ${max_airflow}
+
+sensor:
+  - platform: save_vtr
+    saf_percent:
+      name: "Supply Airflow %"
+    saf_volume:
+      name: "Supply Airflow Volume"
+    eaf_percent:
+      name: "Extract Airflow %"
+    eaf_volume:
+      name: "Extract Airflow Volume"
+    heat_demand:
+      name: "Heat Demand"
+    outdoor_air_temp:
+      name: "Outdoor Air Temp"
+    supply_air_temp:
+      name: "Supply Air Temp"
+    extract_air_temp:
+      name: "Extract Air Temp"
+    rpm_saf:
+      name: "Supply Air Fan RPM"
+    rpm_eaf:
+      name: "Extract Air Fan RPM"
+    heat_exchanger_utilisation:
+      name: "Heat Exchanger Utilisation"
+    heater_utilisation:
+      name: "Heater Utilisation"
+    cooler_utilisation:
+      name: "Cooler Utilisation"
+    pdm_rhs:
+      name: "PDM RHS Sensor"
+    # Computed by the component from the three temperatures:
+    thermal_efficiency:
+      name: "Heat Exchanger Temperature Efficiency"
+    alarm_filter_warning_counter:
+      name: "Filter Warning Counter"
+    active_alarm_count:
+      name: "Active Alarm Count"
+
+binary_sensor:
+  - platform: save_vtr
+    # Summary alarm flags (polled every update_interval):
+    alarm_filter_was_detected:
+      name: "Alarm Filter Was Detected"
+    alarm_output:
+      name: "Alarm Output"
+    alarm_type_a:
+      name: "Alarm Type A"
+    alarm_type_b:
+      name: "Alarm Type B"
+    alarm_type_c:
+      name: "Alarm Type C"
+    # Correlated backend entities:
+    any_alarm_active:
+      name: "Any Alarm Active"
+    filter_warning_active:
+      name: "Filter Warning Active"
+    eco_function_active:
+      name: "ECO Function Active"
+    heater_active:
+      name: "Heater Active"
+    heat_exchanger_active:
+      name: "Heat Exchanger Active"
+
+text_sensor:
+  - platform: save_vtr
+    user_mode:
+      name: "User Mode"
+    # Correlated backend entities (change-driven, not republished every poll):
+    system_status:
+      name: "System Status"
+    alarm_summary:
+      name: "Alarm Summary"

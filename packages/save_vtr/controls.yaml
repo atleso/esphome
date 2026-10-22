@@ -1,0 +1,41 @@
+# Remote package for the save_vtr component. See packages/save_vtr/README.md.
+#
+# Settings entities (switch / number / select / button). These registers are
+# NOT yet verified against a physical VTR300 - see
+# components/save_vtr/README.md before relying on them.
+
+switch:
+  - platform: save_vtr
+    eco_mode:
+      name: "ECO Mode"
+    moisture_transfer:
+      name: "Moisture Transfer"
+
+number:
+  - platform: save_vtr
+    filter_period:
+      name: "Filter Replacement Period"
+    holiday_time:
+      name: "Holiday Duration"
+    away_time:
+      name: "Away Duration"
+    fireplace_time:
+      name: "Fireplace Duration"
+    refresh_time:
+      name: "Refresh Duration"
+    crowded_time:
+      name: "Crowded Duration"
+
+select:
+  - platform: save_vtr
+    user_mode:
+      name: "User Mode Select"
+
+button:
+  - platform: save_vtr
+    activate_fireplace:
+      name: "Activate Fireplace"
+    activate_refresh:
+      name: "Activate Refresh"
+    activate_crowded:
+      name: "Activate Crowded"

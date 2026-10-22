@@ -1,0 +1,72 @@
+# Remote package for the save_vtr component. See packages/save_vtr/README.md.
+#
+# The 32 per-alarm detail text sensors (polled on alarm_update_interval).
+# Optional: core.yaml already gives you alarm_summary / system_status /
+# active_alarm_count, which is enough for most dashboards and automations.
+
+text_sensor:
+  - platform: save_vtr
+    alarm_saf_ctrl:
+      name: "Alarm SAF Controller"
+    alarm_eaf_ctrl:
+      name: "Alarm EAF Controller"
+    alarm_frost_prot:
+      name: "Alarm Frost Protection"
+    alarm_defrosting:
+      name: "Alarm Defrosting"
+    alarm_saf_rpm:
+      name: "Alarm SAF RPM"
+    alarm_eaf_rpm:
+      name: "Alarm EAF RPM"
+    alarm_fpt:
+      name: "Alarm FPT"
+    alarm_oat:
+      name: "Alarm OAT"
+    alarm_sat:
+      name: "Alarm SAT"
+    alarm_rat:
+      name: "Alarm RAT"
+    alarm_eat:
+      name: "Alarm EAT"
+    alarm_ect:
+      name: "Alarm ECT"
+    alarm_eft:
+      name: "Alarm EFT"
+    alarm_oht:
+      name: "Alarm OHT"
+    alarm_emt:
+      name: "Alarm EMT"
+    alarm_rgs:
+      name: "Alarm RGS"
+    alarm_bys:
+      name: "Alarm BYS"
+    alarm_secondary_air:
+      name: "Alarm Secondary Air"
+    alarm_filter:
+      name: "Alarm Filter"
+    alarm_extra_controller:
+      name: "Alarm Extra Controller"
+    alarm_external_stop:
+      name: "Alarm External Stop"
+    alarm_rh:
+      name: "Alarm RH"
+    alarm_co2:
+      name: "Alarm CO2"
+    alarm_low_sat:
+      name: "Alarm Low SAT"
+    alarm_byf:
+      name: "Alarm BYF"
+    alarm_manual_override_outputs:
+      name: "Alarm Manual Override Outputs"
+    alarm_pdm_rhs:
+      name: "Alarm PDM RHS"
+    alarm_pdm_eat:
+      name: "Alarm PDM EAT"
+    alarm_manual_fan_stop:
+      name: "Alarm Manual Fan Stop"
+    alarm_overheat_temperature:
+      name: "Alarm Overheat Temperature"
+    alarm_fire:
+      name: "Alarm Fire"
+    alarm_filter_warning:
+      name: "Alarm Filter Warning"
