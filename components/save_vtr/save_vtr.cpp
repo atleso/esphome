@@ -377,6 +377,16 @@ void SaveVTRClimate::update_alarms() {
 // ControllerDevice response routing
 // ---------------------------------------------------------------------------
 
+void SaveVTRClimate::on_response(std::span<const uint8_t> request_pdu, std::span<const uint8_t> response_pdu) {
+  this->ControllerDevice::on_response(request_pdu, response_pdu);
+  this->dispatch_response_(request_pdu, response_pdu, std::nullopt);
+}
+
+void SaveVTRClimate::on_error(std::span<const uint8_t> request_pdu, modbus::ExceptionCode exception_code) {
+  this->ControllerDevice::on_error(request_pdu, exception_code);
+  this->dispatch_response_(request_pdu, {}, exception_code);
+}
+
 void SaveVTRClimate::on_read_registers(modbus::EntityType entity_type, uint16_t start_address,
                                        std::span<const uint16_t> registers, modbus::ResponseStatus status) {
   if (!modbus::succeeded(status)) {
