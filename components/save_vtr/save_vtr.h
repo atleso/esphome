@@ -218,6 +218,12 @@ class SaveVTRClimate : public climate::Climate,
 #endif
 
  protected:
+  // ControllerDevice::on_response()/on_error() only track online state; they
+  // do not forward to the typed callbacks below. Forward explicitly (as
+  // modbus_controller's WriterDevice does), or no reply ever reaches us.
+  void on_response(std::span<const uint8_t> request_pdu, std::span<const uint8_t> response_pdu) override;
+  void on_error(std::span<const uint8_t> request_pdu, modbus::ExceptionCode exception_code) override;
+
   // ControllerDevice terminal hooks: exactly one fires per accepted read.
   void on_read_registers(modbus::EntityType entity_type, uint16_t start_address,
                          std::span<const uint16_t> registers, modbus::ResponseStatus status) override;

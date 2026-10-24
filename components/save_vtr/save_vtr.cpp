@@ -276,14 +276,20 @@ bool SaveVTRClimate::queue_read_registers_(modbus::EntityType entity_type, uint1
 }
 
 void SaveVTRClimate::update() {
-  if (this->modbus_ == nullptr || this->modbus_->get_module_offline()) {
-    ESP_LOGV(TAG, "Module offline; skipping poll");
+  if (this->modbus_ == nullptr)
     return;
-  }
   // Never stack a new cycle on top of one that is still in flight: values
   // publish as they arrive, so there is nothing a second cycle would add.
   if (this->pending_reads_ != 0) {
     ESP_LOGV(TAG, "Previous cycle still in flight; skipping poll");
+    return;
+  }
+  // modbus_controller only probes an offline device through its own
+  // registered ranges, and this component registers none - so probe here,
+  // or the device never comes back online after an outage.
+  if (this->modbus_->get_module_offline()) {
+    ESP_LOGV(TAG, "Module offline; probing");
+    this->queue_read_registers_(modbus::EntityType::HOLDING, REG_SETPOINT, 1);
     return;
   }
 
@@ -376,6 +382,16 @@ void SaveVTRClimate::update_alarms() {
 // ---------------------------------------------------------------------------
 // ControllerDevice response routing
 // ---------------------------------------------------------------------------
+
+void SaveVTRClimate::on_response(std::span<const uint8_t> request_pdu, std::span<const uint8_t> response_pdu) {
+  this->ControllerDevice::on_response(request_pdu, response_pdu);
+  this->dispatch_response_(request_pdu, response_pdu, std::nullopt);
+}
+
+void SaveVTRClimate::on_error(std::span<const uint8_t> request_pdu, modbus::ExceptionCode exception_code) {
+  this->ControllerDevice::on_error(request_pdu, exception_code);
+  this->dispatch_response_(request_pdu, {}, exception_code);
+}
 
 void SaveVTRClimate::on_read_registers(modbus::EntityType entity_type, uint16_t start_address,
                                        std::span<const uint16_t> registers, modbus::ResponseStatus status) {
@@ -699,7 +715,9 @@ void SaveVTRClimate::update_alarm_binary_state_(size_t idx, uint16_t raw) {
   const bool changed = this->alarm_binary_states_[idx] != new_value;
   this->alarm_binary_states_[idx] = new_value;
 #ifdef USE_BINARY_SENSOR
-  if (this->alarm_binary_sensors_[idx] != nullptr && changed)
+  // Also publish the first reading: the cache starts at 0, so an inactive
+  // flag would otherwise never get a state.
+  if (this->alarm_binary_sensors_[idx] != nullptr && (changed || !this->alarm_binary_sensors_[idx]->has_state()))
     this->alarm_binary_sensors_[idx]->publish_state(state);
 #endif
   if (changed) {
