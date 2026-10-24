@@ -276,14 +276,20 @@ bool SaveVTRClimate::queue_read_registers_(modbus::EntityType entity_type, uint1
 }
 
 void SaveVTRClimate::update() {
-  if (this->modbus_ == nullptr || this->modbus_->get_module_offline()) {
-    ESP_LOGV(TAG, "Module offline; skipping poll");
+  if (this->modbus_ == nullptr)
     return;
-  }
   // Never stack a new cycle on top of one that is still in flight: values
   // publish as they arrive, so there is nothing a second cycle would add.
   if (this->pending_reads_ != 0) {
     ESP_LOGV(TAG, "Previous cycle still in flight; skipping poll");
+    return;
+  }
+  // modbus_controller only probes an offline device through its own
+  // registered ranges, and this component registers none - so probe here,
+  // or the device never comes back online after an outage.
+  if (this->modbus_->get_module_offline()) {
+    ESP_LOGV(TAG, "Module offline; probing");
+    this->queue_read_registers_(modbus::EntityType::HOLDING, REG_SETPOINT, 1);
     return;
   }
 
