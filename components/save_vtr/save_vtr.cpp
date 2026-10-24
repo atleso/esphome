@@ -709,7 +709,9 @@ void SaveVTRClimate::update_alarm_binary_state_(size_t idx, uint16_t raw) {
   const bool changed = this->alarm_binary_states_[idx] != new_value;
   this->alarm_binary_states_[idx] = new_value;
 #ifdef USE_BINARY_SENSOR
-  if (this->alarm_binary_sensors_[idx] != nullptr && changed)
+  // Also publish the first reading: the cache starts at 0, so an inactive
+  // flag would otherwise never get a state.
+  if (this->alarm_binary_sensors_[idx] != nullptr && (changed || !this->alarm_binary_sensors_[idx]->has_state()))
     this->alarm_binary_sensors_[idx]->publish_state(state);
 #endif
   if (changed) {
